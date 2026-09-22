@@ -50,6 +50,21 @@ El diseño previo sigue en `design/project/` como referencia.
 - **Recordatorio**: texto, fecha/hora, repetición, tarea vinculada, si arranca el cronómetro.
 - **Movimiento de tablero**: tarjeta, columna origen, columna destino, timestamp.
 
+## Despliegue en GitHub Pages
+
+El workflow `.github/workflows/pages.yml` copia `index.html`, `app.css` y `app.js` a `_site`
+y los despliega. Corre en cada push a la rama por defecto y también a mano desde la pestaña
+Actions.
+
+**Un paso manual la primera vez**: GitHub no deja que el workflow cree el sitio por su
+cuenta (`Resource not accessible by integration`). En **Settings → Pages → Build and
+deployment → Source**, elige **GitHub Actions**. Después de eso el workflow despliega solo.
+
+Si aun así falla con un error de permisos, revisa **Settings → Actions → General → Workflow
+permissions** y déjalo en *Read and write permissions*.
+
+La URL queda en https://cesar-63.github.io/generador-de-bitacoras/
+
 ## Formato de exportación
 
 Un `.md` por semana (`bitacora-2026-W39.md`) con front-matter YAML y secciones fijas, más
