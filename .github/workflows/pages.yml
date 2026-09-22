@@ -2,7 +2,7 @@ name: Publicar en GitHub Pages
 
 on:
   push:
-    branches: [claude/brave-cerf-lee0gb]
+    branches: [main]
     paths:
       - index.html
       - app.css

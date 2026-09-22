@@ -80,8 +80,8 @@ nada; es lo que lee Claude al abrir la carpeta.
 ## Despliegue en GitHub Pages
 
 El workflow `.github/workflows/pages.yml` copia `index.html`, `app.css` y `app.js` a `_site`
-y los despliega. Corre en cada push a la rama por defecto y también a mano desde la pestaña
-Actions.
+y los despliega. Corre en cada push a `main` y también a mano desde la pestaña Actions.
+El trabajo va en ramas aparte y llega al sitio publicado al fusionarse en `main`.
 
 **Un paso manual la primera vez**: GitHub no deja que el workflow cree el sitio por su
 cuenta (`Resource not accessible by integration`). En **Settings → Pages → Build and
