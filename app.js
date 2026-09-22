@@ -93,6 +93,16 @@
   var S = null;
   var storageOk = true;
 
+  /* Dos modos de guardado:
+     - 'local'   : localStorage del navegador (GitHub Pages, artifact, doble clic).
+     - 'archivo' : data/bitacora.json servido por tools/serve.py. Ese archivo es la
+                   fuente de verdad y cualquiera con acceso a la carpeta lo puede editar. */
+  var MODE = 'local';
+  var FILE_PATH = 'data/bitacora.json';
+  var fileStamp = null;
+  var saveTimer = null;
+  var saving = false;
+
   function blank() {
     return {
       version: 1,
@@ -106,30 +116,116 @@
     };
   }
 
-  function load() {
+  function normalize(data) {
+    var base = blank();
+    if (!data || typeof data !== 'object') return base;
+    data.settings = Object.assign(base.settings, data.settings || {});
+    data.ui = Object.assign(base.ui, data.ui || {});
+    data.ui.includes = Object.assign(base.ui.includes, (data.ui && data.ui.includes) || {});
+    data.tasks = data.tasks || [];
+    data.reminders = data.reminders || [];
+    data.moves = data.moves || [];
+    if (typeof data.version !== 'number') data.version = 1;
+    return data;
+  }
+
+  function loadLocal() {
     var raw = null;
     try { raw = localStorage.getItem(KEY); } catch (e) { storageOk = false; }
     if (!raw) return seed(blank());
-    try {
-      var data = JSON.parse(raw);
-      var base = blank();
-      data.settings = Object.assign(base.settings, data.settings || {});
-      data.ui = Object.assign(base.ui, data.ui || {});
-      data.ui.includes = Object.assign(base.ui.includes, (data.ui && data.ui.includes) || {});
-      data.tasks = data.tasks || [];
-      data.reminders = data.reminders || [];
-      data.moves = data.moves || [];
-      return data;
-    } catch (e) {
-      return seed(blank());
-    }
+    try { return normalize(JSON.parse(raw)); } catch (e) { return seed(blank()); }
+  }
+
+  function probeFile() {
+    return new Promise(function (resolve) {
+      if (!window.fetch || location.protocol === 'file:') { resolve(false); return; }
+      var settled = false;
+      var giveUp = setTimeout(function () {
+        if (!settled) { settled = true; resolve(false); }
+      }, 2500);
+      fetch('api/state', { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('sin servidor local'); return r.json(); })
+        .then(function (body) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(giveUp);
+          MODE = 'archivo';
+          FILE_PATH = body.file || FILE_PATH;
+          fileStamp = body.stamp;
+          S = normalize(body.data);
+          resolve(true);
+        })
+        .catch(function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(giveUp);
+          resolve(false);
+        });
+    });
   }
 
   function save() {
+    if (MODE === 'archivo') {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(flushFile, 200);
+      return;
+    }
     try { localStorage.setItem(KEY, JSON.stringify(S)); }
     catch (e) {
       if (storageOk) { storageOk = false; toast('No se pudo guardar: el navegador bloquea el almacenamiento.'); }
     }
+  }
+
+  function flushFile() {
+    saveTimer = null;
+    if (saving) { save(); return; }
+    saving = true;
+    fetch('api/state', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stamp: fileStamp, data: S })
+    }).then(function (r) {
+      return r.json().then(function (body) { return { ok: r.ok, status: r.status, body: body }; });
+    }).then(function (res) {
+      saving = false;
+      if (res.ok) { fileStamp = res.body.stamp; return; }
+      if (res.status === 409) {
+        fileStamp = res.body.stamp;
+        S = normalize(res.body.data);
+        render();
+        toast('El archivo cambió por fuera. Recargué el disco: repite tu último cambio.');
+        return;
+      }
+      toast('El servidor local no pudo escribir el archivo.');
+    }).catch(function () {
+      saving = false;
+      toast('Se cayó el servidor local: tus cambios no se están guardando.');
+    });
+  }
+
+  function pollFile() {
+    if (MODE !== 'archivo' || saveTimer || saving || (dlg && dlg.open)) return;
+    fetch('api/state', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (body) {
+        if (!body || body.stamp === fileStamp) return;
+        fileStamp = body.stamp;
+        S = normalize(body.data);
+        render();
+        toast('Actualizado desde ' + FILE_PATH);
+      })
+      .catch(function () { });
+  }
+
+  function flushOnExit() {
+    if (MODE !== 'archivo') { save(); return; }
+    if (!saveTimer) return;
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    try {
+      navigator.sendBeacon('api/state',
+        new Blob([JSON.stringify({ stamp: fileStamp, data: S })], { type: 'application/json' }));
+    } catch (e) { /* al cerrar no queda nada más que intentar */ }
   }
 
   function seed(s) {
@@ -402,6 +498,8 @@
       if (on) items[i].setAttribute('aria-current', 'page');
       else items[i].removeAttribute('aria-current');
     }
+    var sub = document.querySelector('.brand-sub');
+    if (sub) sub.textContent = MODE === 'archivo' ? 'Archivo · ' + FILE_PATH : 'Local · sin cuenta';
     var badge = document.getElementById('navBadge');
     var pend = S.reminders.filter(function (r) { return !r.done; }).length;
     badge.hidden = pend === 0;
@@ -817,8 +915,12 @@
       '<input id="author" type="text" data-act="author" value="' + esc(S.settings.author) + '" placeholder="Opcional"></div></section>';
 
     h += '<section class="card"><h2>Tus datos</h2>' +
-      '<p class="hint">Todo se guarda en este navegador. Si borras los datos del sitio, se pierde: ' +
-      'descarga una copia de vez en cuando.</p><div class="row wrap">' +
+      (MODE === 'archivo'
+        ? '<p class="hint">Esta bitácora vive en <strong>' + esc(FILE_PATH) + '</strong>, dentro de la carpeta del proyecto. ' +
+          'Es un archivo de texto: lo puedes editar tú o pedirle a Claude que lo haga, y la app recoge los cambios sola en unos segundos.</p>'
+        : '<p class="hint">Todo se guarda en este navegador. Si borras los datos del sitio, se pierde: ' +
+          'descarga una copia de vez en cuando.</p>') +
+      '<div class="row wrap">' +
       '<button type="button" class="btn" data-act="backup">Descargar copia (.json)</button>' +
       '<button type="button" class="btn" data-act="restore">Restaurar desde archivo</button>' +
       '<button type="button" class="btn danger" data-act="wipe">Borrar todo</button>' +
@@ -1428,7 +1530,13 @@
     toastEl = document.getElementById('toast');
     dlg = document.getElementById('dlg');
 
-    S = load();
+    probeFile().then(function (onFile) {
+      if (!onFile) S = loadLocal();
+      boot();
+    });
+  }
+
+  function boot() {
     applyLook();
 
     document.addEventListener('click', onClick);
@@ -1436,13 +1544,14 @@
     document.addEventListener('submit', onSubmit);
     window.addEventListener('hashchange', route);
     dlg.addEventListener('close', function () { render(); });
-    window.addEventListener('beforeunload', save);
+    window.addEventListener('beforeunload', flushOnExit);
 
     if (!location.hash) location.hash = '#/hoy';
     route();
 
     setInterval(refreshLive, 1000);
     setInterval(checkReminders, 20000);
+    if (MODE === 'archivo') setInterval(pollFile, 2500);
     checkReminders();
     save();
   }

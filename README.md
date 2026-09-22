@@ -4,16 +4,43 @@ App web para llevar bitácora de trabajo: cronómetro, tareas principales y secu
 recordatorios, tablero kanban y modo oscuro. El objetivo final es exportar un archivo
 que Claude pueda leer para escribir el resumen ejecutivo de la semana.
 
-Estado actual: **app funcionando**. Sin build, sin dependencias, sin servidor: abre
-`index.html` en el navegador (doble clic o cualquier hosting estático) y ya está.
-El diseño previo sigue en `design/project/` como referencia.
+Estado actual: **app funcionando**, sin build y sin dependencias.
+
+## Dos formas de usarla
+
+**En la web** — https://cesar-63.github.io/generador-de-bitacoras/ o abriendo
+`index.html` con doble clic. Guarda en el `localStorage` del navegador.
+
+**En local, sobre un archivo** — `python3 tools/serve.py` y abre
+http://127.0.0.1:4321. Ahí la bitácora vive en `data/bitacora.json`, un archivo
+de texto que puedes editar tú, con la CLI, o pedirle a Claude que edite si tiene
+acceso a la carpeta. La app recoge los cambios del archivo en ~2,5 segundos.
+
+La app elige el modo sola: pregunta por `api/state` al arrancar y, si nadie
+responde, se queda en el navegador. `data/` está en `.gitignore`: es tu registro
+de trabajo y el repositorio es público.
+
+```bash
+python3 tools/serve.py                              # la app sobre el archivo
+python3 tools/bitacora.py ver                       # listar desde la terminal
+python3 tools/bitacora.py add "Título" --proyecto Atlas
+python3 tools/bitacora.py tiempo <id> 45            # sumar 45 minutos
+python3 tools/bitacora.py cerrar <id>
+python3 tools/bitacora.py semana                    # el markdown para Claude
+```
+
+`CLAUDE.md` tiene el esquema del archivo y las reglas para editarlo sin romper
+nada; es lo que lee Claude al abrir la carpeta.
 
 ## Archivos
 
 - `index.html` — el armazón de la app.
 - `app.css` — tokens de color (claro/oscuro), tipografía y componentes.
 - `app.js` — estado, cronómetro, tablero, recordatorios y generación del export.
+- `tools/serve.py` — servidor local que guarda en `data/bitacora.json`.
+- `tools/bitacora.py` — CLI para manejar la bitácora sin abrir el navegador.
 - `tools/build-artifact.py` — genera `dist/page.html` para publicarla como Artifact.
+- `design/project/` — el diseño previo, como referencia.
 
 ## Qué hace
 
