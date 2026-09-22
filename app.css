@@ -21,6 +21,8 @@
   --warn: #9A6B1F;
   --warn-soft: #F5EBD6;
   --danger: #A33A2C;
+  --epic: #43508F;
+  --epic-soft: #E4E6F2;
   --shadow: 0 1px 2px rgba(26, 26, 24, .06);
   --r-s: 8px;
   --r-m: 12px;
@@ -55,6 +57,8 @@
     --warn: #D6A65C;
     --warn-soft: #2C2415;
     --danger: #E08072;
+    --epic: #8A93E0;
+    --epic-soft: #1E2136;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3);
   }
   :root:not([data-theme="light"])[data-accent="teal"] { --accent: #63AE99; --accent-soft: #17281F; }
@@ -82,6 +86,8 @@
   --warn: #D6A65C;
   --warn-soft: #2C2415;
   --danger: #E08072;
+  --epic: #8A93E0;
+  --epic-soft: #1E2136;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3);
 }
 :root[data-theme="dark"][data-accent="teal"] { --accent: #63AE99; --accent-soft: #17281F; }
@@ -252,6 +258,31 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--good); f
 .chip.accent { background: var(--accent-soft); color: var(--accent); }
 .chip.good { background: var(--good-soft); color: var(--good); }
 .chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.epic { background: var(--epic-soft); color: var(--epic); font-weight: 600; letter-spacing: 0.02em; }
+.chip.story { background: transparent; color: var(--epic); border: 1px solid var(--epic-soft); font-weight: 600; }
+button.chip.tag {
+  border: 1px dashed var(--border); background: transparent; color: var(--muted);
+  font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; padding: 3px 9px;
+}
+button.chip.tag:hover { border-style: solid; color: var(--ink); }
+button.chip.tag.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* ---------- filtro y backlog ---------- */
+
+.filtro {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px; border-radius: var(--r-m);
+  background: var(--surface); border: 1px solid var(--border);
+}
+.filtro select { background: var(--soft); }
+
+.epic-card { gap: 12px; }
+.epic-card.cerrada { opacity: .6; }
+.story {
+  padding: 10px 12px; border-radius: var(--r-m);
+  background: var(--soft); border: 1px solid var(--hairline);
+  display: flex; flex-direction: column; gap: 4px;
+}
 
 .dot { width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: var(--faint); }
 .dot.accent { background: var(--accent); }

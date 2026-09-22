@@ -37,8 +37,10 @@ LOCK = threading.Lock()
 VACIA = {
     "version": 1,
     "settings": {"theme": "system", "accent": "clay", "author": ""},
-    "ui": {"view": "hoy", "weekOffset": 0, "tab": "md",
+    "ui": {"view": "hoy", "weekOffset": 0, "tab": "md", "filter": {"epic": "", "tag": ""},
            "includes": {"side": True, "board": True, "reminders": True, "prompt": True}},
+    "epics": [],
+    "stories": [],
     "tasks": [],
     "reminders": [],
     "moves": [],
@@ -105,6 +107,16 @@ def _hm(segundos: float) -> str:
     return f"{m // 60:02d}:{m % 60:02d}"
 
 
+def epica_de(data: dict, tarea: dict):
+    """La épica sale de la historia si la hay; si no, del campo epicId."""
+    historias = {s["id"]: s for s in (data.get("stories") or []) if s.get("id")}
+    epicas = {e["id"]: e for e in (data.get("epics") or []) if e.get("id")}
+    hist = historias.get(tarea.get("storyId"))
+    if hist:
+        return epicas.get(hist.get("epicId"))
+    return epicas.get(tarea.get("epicId"))
+
+
 def espejo(data: dict) -> None:
     """Vista legible de un vistazo. Se regenera entera en cada guardado."""
     tareas = data.get("tasks") or []
@@ -139,9 +151,31 @@ def espejo(data: dict) -> None:
             if subs:
                 partes.append(f"{hechas}/{len(subs)} subtareas")
             partes.append("principal" if t.get("kind") == "main" else "secundaria")
+            ep = epica_de(data, t)
+            if ep:
+                partes.insert(1, ep.get("key", ""))
+            for g in t.get("tags") or []:
+                partes.append(f"#{g}")
             lineas.append(f"- **{t.get('title', '')}** — {' · '.join(partes)}  `{t.get('id', '')}`")
             if t.get("note"):
                 lineas.append(f"  - nota: {t['note']}")
+        lineas.append("")
+
+    epicas = data.get("epics") or []
+    if epicas:
+        lineas += ["## Épicas", ""]
+        for e in epicas:
+            suyas = [t for t in tareas if (epica_de(data, t) or {}).get("id") == e.get("id")]
+            cerradas = sum(1 for t in suyas if t.get("column") == "done")
+            total = sum(_segundos(t) for t in suyas)
+            estado = " · terminada" if e.get("done") else ""
+            lineas.append(f"- **{e.get('key', '')}** {e.get('title', '')} — "
+                          f"{_hm(total)} · {cerradas}/{len(suyas)} tareas{estado}")
+            for h in [x for x in (data.get("stories") or []) if x.get("epicId") == e.get("id")]:
+                suyas_h = [t for t in tareas if t.get("storyId") == h.get("id")]
+                unidad = "tarea" if len(suyas_h) == 1 else "tareas"
+                lineas.append(f"  - {h.get('key', '')} {h.get('title', '')} "
+                              f"({len(suyas_h)} {unidad}, {_hm(sum(_segundos(t) for t in suyas_h))})")
         lineas.append("")
 
     pendientes = [r for r in (data.get("reminders") or []) if not r.get("done")]

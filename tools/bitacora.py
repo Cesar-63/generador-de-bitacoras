@@ -5,7 +5,10 @@ Pensado para que Claude (o tú) trabaje sin abrir el navegador. La app, si está
 abierta, recoge los cambios en unos segundos.
 
     python3 tools/bitacora.py ver
-    python3 tools/bitacora.py add "Migrar endpoints" --proyecto Atlas
+    python3 tools/bitacora.py epica add "Facturación electrónica" --clave FACT
+    python3 tools/bitacora.py historia "Como cliente quiero descargar mi factura" --epica FACT
+    python3 tools/bitacora.py add "Migrar endpoints" --proyecto Atlas --historia HU-1
+    python3 tools/bitacora.py etiquetar a1b2c3 bug deuda-tecnica
     python3 tools/bitacora.py sub a1b2c3 "Mapear los actuales"
     python3 tools/bitacora.py tiempo a1b2c3 45
     python3 tools/bitacora.py mover a1b2c3 review
@@ -38,6 +41,60 @@ def nuevo_id() -> str:
 
 def ahora_utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _buscar_en(coleccion, prefijo, que):
+    """Por id, prefijo de id o clave (PAGOS, HU-3). Sin ambigüedad."""
+    p = (prefijo or "").strip()
+    exactos = [x for x in coleccion if x.get("id") == p or (x.get("key") or "").upper() == p.upper()]
+    if exactos:
+        return exactos[0]
+    parciales = [x for x in coleccion if x.get("id", "").startswith(p)]
+    if not parciales:
+        sys.exit(f"No hay ninguna {que} con «{p}».")
+    if len(parciales) > 1:
+        sys.exit(f"«{p}» es ambiguo entre {len(parciales)} {que}s.")
+    return parciales[0]
+
+
+def epica_de(data: dict, tarea: dict):
+    hist = next((s for s in data.get("stories") or [] if s["id"] == tarea.get("storyId")), None)
+    destino = hist.get("epicId") if hist else tarea.get("epicId")
+    return next((e for e in data.get("epics") or [] if e["id"] == destino), None)
+
+
+def historia_de(data: dict, tarea: dict):
+    return next((s for s in data.get("stories") or [] if s["id"] == tarea.get("storyId")), None)
+
+
+def clave_desde(titulo: str, tomadas) -> str:
+    palabras = [w for w in "".join(
+        c if c.isalnum() or c.isspace() else " " for c in titulo.upper()).split() if w]
+    base = ("".join(w[0] for w in palabras) if len(palabras) > 1 else (palabras[0] if palabras else "EP"))[:5]
+    clave, n = base, 2
+    while clave in tomadas:
+        clave, n = f"{base}{n}", n + 1
+    return clave
+
+
+def siguiente_hu(data: dict) -> str:
+    mayor = 0
+    for s in data.get("stories") or []:
+        clave = str(s.get("key") or "")
+        if clave.upper().startswith("HU-") and clave[3:].isdigit():
+            mayor = max(mayor, int(clave[3:]))
+    return f"HU-{mayor + 1}"
+
+
+def normaliza_tags(valores):
+    salida, vistos = [], set()
+    for bruto in valores:
+        for g in str(bruto).replace(",", " ").split():
+            g = g.lstrip("#").lower()
+            if g and g not in vistos:
+                vistos.add(g)
+                salida.append(g)
+    return salida
 
 
 def buscar(data: dict, prefijo: str) -> dict:
@@ -117,6 +174,14 @@ def cmd_ver(data, args):
                 extra.append(t["project"])
             if subs:
                 extra.append(f"{hechas}/{len(subs)} subtareas")
+            ep = epica_de(data, t)
+            if ep:
+                extra.insert(0, ep["key"])
+            hi = historia_de(data, t)
+            if hi:
+                extra.insert(1 if ep else 0, hi["key"])
+            for g in t.get("tags") or []:
+                extra.append(f"#{g}")
             if t.get("kind") == "side":
                 extra.append("secundaria")
             if t["id"] == corriendo:
@@ -138,6 +203,12 @@ def cmd_ver(data, args):
 
 
 def cmd_add(data, args):
+    epic_id = story_id = None
+    if args.historia:
+        hist = _buscar_en(data.get("stories") or [], args.historia, "historia")
+        story_id, epic_id = hist["id"], hist.get("epicId")
+    elif args.epica:
+        epic_id = _buscar_en(data.get("epics") or [], args.epica, "épica")["id"]
     tarea = {
         "id": nuevo_id(),
         "title": args.titulo,
@@ -146,6 +217,9 @@ def cmd_add(data, args):
         "column": args.col,
         "priority": args.prioridad,
         "note": args.nota or "",
+        "tags": normaliza_tags(args.etiqueta or []),
+        "epicId": epic_id,
+        "storyId": story_id,
         "subtasks": [],
         "sessions": [],
         "createdAt": ahora_utc(),
@@ -254,6 +328,83 @@ def cmd_recordar(data, args):
     print(f"Recordatorio para {rec['at']}: {rec['text']}")
 
 
+def cmd_epica(data, args):
+    data.setdefault("epics", [])
+    if args.accion == "ver":
+        if not data["epics"]:
+            print("Sin épicas todavía.")
+        for e in data["epics"]:
+            suyas = [t for t in data["tasks"] if (epica_de(data, t) or {}).get("id") == e["id"]]
+            cerradas = sum(1 for t in suyas if t.get("column") == "done")
+            marca = " (terminada)" if e.get("done") else ""
+            print(f"\n{e['key']}  {e['title']}{marca}   {_hm(sum(segundos(t) for t in suyas))}"
+                  f"  ·  {cerradas}/{len(suyas)} "
+                  f"{'tarea' if len(suyas) == 1 else 'tareas'}   {e['id']}")
+            for h in [s for s in data.get("stories") or [] if s["epicId"] == e["id"]]:
+                de_h = [t for t in data["tasks"] if t.get("storyId") == h["id"]]
+                print(f"    {h['key']}  {h['title']}  ·  {len(de_h)} "
+                      f"{'tarea' if len(de_h) == 1 else 'tareas'}  "
+                      f"{_hm(sum(segundos(t) for t in de_h))}   {h['id']}")
+        print()
+        return
+
+    clave = (args.clave or "").upper() or clave_desde(args.titulo, {e["key"] for e in data["epics"]})
+    if any(e["key"] == clave for e in data["epics"]):
+        sys.exit(f"Ya hay una épica con la clave {clave}.")
+    nueva = {"id": nuevo_id(), "key": clave, "title": args.titulo,
+             "note": args.nota or "", "done": False, "createdAt": ahora_utc()}
+    data["epics"].append(nueva)
+    guardar(data)
+    print(f"Épica {clave} creada: {args.titulo}   ({nueva['id']})")
+
+
+def cmd_historia(data, args):
+    data.setdefault("stories", [])
+    epica = _buscar_en(data.get("epics") or [], args.epica, "épica")
+    clave = (args.clave or "").upper() or siguiente_hu(data)
+    nueva = {"id": nuevo_id(), "epicId": epica["id"], "key": clave, "title": args.titulo,
+             "note": args.criterios or "", "done": False, "createdAt": ahora_utc()}
+    data["stories"].append(nueva)
+    guardar(data)
+    print(f"Historia {clave} en {epica['key']}: {args.titulo}   ({nueva['id']})")
+
+
+def cmd_asignar(data, args):
+    t = buscar(data, args.id)
+    if args.ninguna:
+        t["epicId"] = t["storyId"] = None
+        guardar(data)
+        print(f"«{t['title']}» queda sin épica ni historia")
+        return
+    if args.historia:
+        hist = _buscar_en(data.get("stories") or [], args.historia, "historia")
+        t["storyId"], t["epicId"] = hist["id"], hist.get("epicId")
+        epica = epica_de(data, t)
+        guardar(data)
+        print(f"«{t['title']}» → {epica['key'] if epica else '?'} / {hist['key']}")
+        return
+    if args.epica:
+        epica = _buscar_en(data.get("epics") or [], args.epica, "épica")
+        t["epicId"], t["storyId"] = epica["id"], None
+        guardar(data)
+        print(f"«{t['title']}» → {epica['key']}")
+        return
+    sys.exit("Dime --epica, --historia o --ninguna.")
+
+
+def cmd_etiquetar(data, args):
+    t = buscar(data, args.id)
+    actuales = list(t.get("tags") or [])
+    nuevas = normaliza_tags(args.etiquetas)
+    if args.quitar:
+        actuales = [g for g in actuales if g not in nuevas]
+    else:
+        actuales = normaliza_tags(actuales + nuevas)
+    t["tags"] = actuales
+    guardar(data)
+    print(f"«{t['title']}» → {' '.join('#' + g for g in actuales) if actuales else 'sin etiquetas'}")
+
+
 def cmd_semana(data, args):
     ini = lunes(args.offset)
     fin = ini + timedelta(days=7)
@@ -306,6 +457,22 @@ def cmd_semana(data, args):
             L.append(f"- {DIAS[d0.weekday()]} {d0:%Y-%m-%d}: {humano(pri + sec)}")
     L.append("")
 
+    por_epica = {}
+    for t in dentro:
+        ep = epica_de(data, t)
+        clave = ep["key"] if ep else "(sin épica)"
+        acc = por_epica.setdefault(clave, {"titulo": ep["title"] if ep else "Trabajo sin épica",
+                                           "seg": 0.0, "n": 0})
+        acc["seg"] += segundos(t, ini, fin)
+        acc["n"] += 1
+    con_tiempo = {k: v for k, v in por_epica.items() if v["seg"] > 0}
+    if con_tiempo:
+        L.append("## Tiempo por épica")
+        for clave, v in sorted(con_tiempo.items(), key=lambda kv: -kv[1]["seg"]):
+            plural = "tarea" if v["n"] == 1 else "tareas"
+            L.append(f"- {clave} — {v['titulo']}: {humano(v['seg'])} ({v['n']} {plural})")
+        L.append("")
+
     L.append("## Tareas principales")
     principales = [t for t in dentro if t.get("kind") == "main"]
     if not principales:
@@ -315,6 +482,13 @@ def cmd_semana(data, args):
         L += ["", f"### {t.get('title', '')}"]
         if t.get("project"):
             L.append(f"- proyecto: {t['project']}")
+        ep, hi = epica_de(data, t), historia_de(data, t)
+        if ep:
+            L.append(f"- épica: {ep['key']} — {ep['title']}")
+        if hi:
+            L.append(f"- historia: {hi['key']} — {hi['title']}")
+        if t.get("tags"):
+            L.append("- etiquetas: " + ", ".join(t["tags"]))
         L.append(f"- estado: {NOMBRE_COL.get(t.get('column'), t.get('column'))}")
         L.append(f"- tiempo en la semana: {humano(segundos(t, ini, fin))}")
         L.append(f"- tiempo acumulado: {humano(segundos(t))}")
@@ -392,7 +566,37 @@ def main():
     p.add_argument("--col", choices=[c for c, _ in COLUMNAS], default="todo")
     p.add_argument("--prioridad", choices=["baja", "normal", "alta"], default="normal")
     p.add_argument("--nota")
+    p.add_argument("--epica", help="clave o id de la épica")
+    p.add_argument("--historia", help="clave o id de la historia (fija también la épica)")
+    p.add_argument("--etiqueta", action="append", help="repetible, o separadas por comas")
     p.set_defaults(func=cmd_add)
+
+    p = sub.add_parser("epica", help="crear o listar épicas")
+    p.add_argument("accion", choices=["add", "ver"])
+    p.add_argument("titulo", nargs="?", default="")
+    p.add_argument("--clave", help="PAGOS; si no, se deduce del título")
+    p.add_argument("--nota")
+    p.set_defaults(func=cmd_epica)
+
+    p = sub.add_parser("historia", help="crear una historia de usuario dentro de una épica")
+    p.add_argument("titulo")
+    p.add_argument("--epica", required=True, help="clave o id de la épica")
+    p.add_argument("--clave", help="HU-7; si no, se numera sola")
+    p.add_argument("--criterios", help="criterios de aceptación")
+    p.set_defaults(func=cmd_historia)
+
+    p = sub.add_parser("asignar", help="colgar una tarea de una épica o historia")
+    p.add_argument("id")
+    p.add_argument("--epica")
+    p.add_argument("--historia")
+    p.add_argument("--ninguna", action="store_true")
+    p.set_defaults(func=cmd_asignar)
+
+    p = sub.add_parser("etiquetar", help="añadir o quitar etiquetas de una tarea")
+    p.add_argument("id")
+    p.add_argument("etiquetas", nargs="+")
+    p.add_argument("--quitar", action="store_true")
+    p.set_defaults(func=cmd_etiquetar)
 
     p = sub.add_parser("sub", help="añadir una subtarea")
     p.add_argument("id")
