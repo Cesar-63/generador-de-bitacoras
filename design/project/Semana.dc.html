@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bitácora — Semana y export</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: "IBM Plex Sans", system-ui, sans-serif; background: #F3F1EA; }
+    a { color: #B85C38; }
+    a:hover { color: #8F4526; }
+    button { font-family: inherit; cursor: pointer; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; display: flex; background: #F3F1EA; color: #1A1A18;">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; padding: 28px 20px; background: #EAE6DB; border-right: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 26px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-family: Fraunces, Georgia, serif; font-size: 25px; font-weight: 600; letter-spacing: -0.01em;">Bitácora</span>
+      <span style="font-size: 12px; color: #6E6B62; letter-spacing: 0.04em; text-transform: uppercase;">Local · sin cuenta</span>
+    </div>
+
+    <nav style="display: flex; flex-direction: column; gap: 4px;">
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        Hoy
+      </a>
+      <a href="Kanban.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>
+        Kanban
+      </a>
+      <a href="#semana" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Semana
+      </a>
+      <a href="Recordatorios.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"></path><path d="M10.5 20a2 2 0 0 0 3 0"></path></svg>
+        Recordatorios
+      </a>
+    </nav>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="padding: 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #6E6B62;">Corte</span>
+      <span style="font-size: 14px; font-weight: 500; line-height: 1.4;">Martes 22, 15:02</span>
+      <span style="font-size: 12px; color: #6E6B62;">El export toma lo registrado hasta este momento.</span>
+    </div>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 30px 36px; display: flex; flex-direction: column; gap: 20px;">
+
+    <header style="display: flex; align-items: flex-end; gap: 20px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #6E6B62;">Semana 39 · 21 al 25 de septiembre</span>
+        <h1 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 36px; font-weight: 600; letter-spacing: -0.02em;">Resumen de la semana</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button type="button" onClick="{{copy}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #DED9CB; background: #FFFFFF; color: #1A1A18; font-size: 14px; font-weight: 600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+          {{copyLabel}}
+        </button>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 15px; font-weight: 600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg>
+          Descargar bitacora-2026-W39.md
+        </button>
+      </div>
+    </header>
+
+    <div style="flex-grow: 1; min-height: 0; display: flex; gap: 20px;">
+
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 18px;">
+
+        <section style="box-sizing: border-box; padding: 20px 22px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: flex-end; gap: 18px;">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+              <h2 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600;">Tiempo por día</h2>
+              <span style="font-size: 13px; color: #6E6B62;">2 de 5 días registrados</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #6E6B62;"><span style="width: 10px; height: 10px; border-radius: 3px; background: {{accent}};"></span>Principales</span>
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #6E6B62;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #DDEAE5;"></span>Secundarias</span>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-end; gap: 22px; height: 186px; padding: 0 4px; border-bottom: 1px solid #DED9CB;">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">06:10</span>
+              <div style="width: 54px; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px;">
+                <div style="height: 24px; border-radius: 4px 4px 0 0; background: #DDEAE5;"></div>
+                <div style="height: 124px; border-radius: 0 0 4px 4px; background: {{accent}};"></div>
+              </div>
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #1A1A18;">04:56</span>
+              <div style="width: 54px; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px;">
+                <div style="height: 18px; border-radius: 4px 4px 0 0; background: #DDEAE5;"></div>
+                <div style="height: 100px; border-radius: 0 0 4px 4px; background: {{accent}};"></div>
+              </div>
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9B978C;">—</span>
+              <div style="width: 54px; height: 60px; border-radius: 4px; border: 1px dashed #DED9CB;"></div>
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9B978C;">—</span>
+              <div style="width: 54px; height: 60px; border-radius: 4px; border: 1px dashed #DED9CB;"></div>
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9B978C;">—</span>
+              <div style="width: 54px; height: 60px; border-radius: 4px; border: 1px dashed #DED9CB;"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 22px; padding: 0 4px;">
+            <span style="flex-grow: 1; text-align: center; font-size: 13px; font-weight: 500;">lun 21</span>
+            <span style="flex-grow: 1; text-align: center; font-size: 13px; font-weight: 500;">mar 22</span>
+            <span style="flex-grow: 1; text-align: center; font-size: 13px; color: #9B978C;">mié 23</span>
+            <span style="flex-grow: 1; text-align: center; font-size: 13px; color: #9B978C;">jue 24</span>
+            <span style="flex-grow: 1; text-align: center; font-size: 13px; color: #9B978C;">vie 25</span>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <div style="flex-grow: 1; padding: 12px 14px; border-radius: 12px; background: #FAF8F2; border: 1px solid #EFEBE0;">
+              <span style="display: block; font-size: 12px; color: #6E6B62;">Total de la semana</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500;">11:06</span>
+            </div>
+            <div style="flex-grow: 1; padding: 12px 14px; border-radius: 12px; background: #FAF8F2; border: 1px solid #EFEBE0;">
+              <span style="display: block; font-size: 12px; color: #6E6B62;">Principales</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500;">09:21</span>
+            </div>
+            <div style="flex-grow: 1; padding: 12px 14px; border-radius: 12px; background: #FAF8F2; border: 1px solid #EFEBE0;">
+              <span style="display: block; font-size: 12px; color: #6E6B62;">Secundarias</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500;">01:45</span>
+            </div>
+            <div style="flex-grow: 1; padding: 12px 14px; border-radius: 12px; background: #FAF8F2; border: 1px solid #EFEBE0;">
+              <span style="display: block; font-size: 12px; color: #6E6B62;">Cerradas</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500;">2</span>
+            </div>
+          </div>
+        </section>
+
+        <section style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 22px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 14px;">
+          <h2 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600;">Qué se lleva el export</h2>
+          <sc-for list="{{includes}}" as="inc" hint-placeholder-count="4">
+            <label style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 10px; background: {{inc.bg}}; border: 1px solid {{inc.border}}; cursor: pointer;">
+              <input type="checkbox" checked="{{inc.on}}" onChange="{{inc.toggle}}" style="width: 18px; height: 18px; accent-color: #2E6F60;">
+              <span style="flex-grow: 1; font-size: 14px; font-weight: 500;">{{inc.label}}</span>
+              <span style="font-size: 13px; color: #6E6B62;">{{inc.hint}}</span>
+            </label>
+          </sc-for>
+        </section>
+      </div>
+
+      <section style="width: 512px; flex-shrink: 0; box-sizing: border-box; border-radius: 16px; background: #1A1A18; color: #F3F1EA; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid #33322C;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0A88C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg>
+          <span style="flex-grow: 1; font-size: 15px; font-weight: 600;">Archivo para Claude</span>
+          <div style="display: flex; gap: 4px; padding: 3px; border-radius: 9px; background: #26251F;">
+            <button type="button" onClick="{{showMd}}" style="min-height: 30px; padding: 0 12px; border-radius: 7px; border: none; background: {{mdBg}}; color: {{mdFg}}; font-size: 13px; font-weight: 600;">Markdown</button>
+            <button type="button" onClick="{{showJson}}" style="min-height: 30px; padding: 0 12px; border-radius: 7px; border: none; background: {{jsonBg}}; color: {{jsonFg}}; font-size: 13px; font-weight: 600;">JSON</button>
+          </div>
+        </div>
+
+        <div style="flex-grow: 1; min-height: 0; padding: 16px 18px; overflow: hidden;">
+          <sc-if value="{{isMd}}" hint-placeholder-val="{{true}}">
+            <pre style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.65; color: #E4E0D6; white-space: pre-wrap;">---
+tipo: bitacora-semanal
+semana: 2026-W39
+rango: 2026-09-21 / 2026-09-25
+corte: 2026-09-22T15:02
+autor: [TU NOMBRE]
+total: 11h06m
+---
+
+# Semana 39 — 21 al 25 de septiembre
+
+## Tiempos
+- Principales: 09h21m (84%)
+- Secundarias: 01h45m (16%)
+- Días registrados: 2 de 5
+
+## Tareas principales
+### Migración de endpoints de facturación
+- proyecto: Atlas
+- estado: En curso
+- tiempo: 02h15m
+- subtareas: 2 de 3 cerradas
+- sesiones: lun 09:10–11:25
+- nota: falta el endpoint de notas de crédito
+
+### Revisión de incidencias de producción
+- proyecto: Soporte
+- estado: En curso (cronómetro activo)
+- tiempo: 01h29m
+- subtareas: 1 de 2 cerradas
+
+## Tareas secundarias
+- Daily con el equipo — 00h15m
+- Responder correos de clientes — 00h22m
+- Actualizar el tablero del sprint — 00h08m
+
+## Movimientos del tablero
+- Corrección del cálculo de impuestos: En revisión → Hecho (mar 11:40)
+- Pruebas de carga del carrito: Por hacer → En revisión (lun 16:20)
+
+## Recordatorios cumplidos
+- lun 17:30 Cierre de bitácora — hecho
+- mar 16:00 Enviar avance del módulo de reportes — pendiente
+</pre>
+          </sc-if>
+          <sc-if value="{{isJson}}" hint-placeholder-val="{{false}}">
+            <pre style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.65; color: #E4E0D6; white-space: pre-wrap;">{
+  "tipo": "bitacora-semanal",
+  "semana": "2026-W39",
+  "rango": ["2026-09-21", "2026-09-25"],
+  "corte": "2026-09-22T15:02",
+  "totales": {
+    "principales_min": 561,
+    "secundarias_min": 105,
+    "dias_registrados": 2
+  },
+  "principales": [
+    {
+      "titulo": "Migración de endpoints de facturación",
+      "proyecto": "Atlas",
+      "estado": "en_curso",
+      "minutos": 135,
+      "subtareas": { "total": 3, "cerradas": 2 },
+      "sesiones": [
+        { "dia": "2026-09-21", "de": "09:10", "a": "11:25" }
+      ]
+    }
+  ],
+  "secundarias": [
+    { "titulo": "Daily con el equipo", "minutos": 15 }
+  ],
+  "tablero": [
+    {
+      "tarjeta": "Corrección del cálculo de impuestos",
+      "de": "revision",
+      "a": "hecho",
+      "cuando": "2026-09-22T11:40"
+    }
+  ]
+}
+</pre>
+          </sc-if>
+        </div>
+
+        <div style="padding: 16px 18px; border-top: 1px solid #33322C; display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: #A9A497;">Prompt que acompaña al archivo</span>
+          <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #E4E0D6;">«Con esta bitácora, escribe un resumen ejecutivo de máximo 200 palabras: logros, tiempo por proyecto, bloqueos y lo que queda pendiente para la próxima semana.»</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B85C38","options":["#B85C38","#2E6F60","#4B5AA8","#1A1A18"]},"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'md',
+      copied: false,
+      includes: { t1: true, t2: true, t3: true, t4: false }
+    };
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#B85C38';
+    const tab = this.state.tab;
+
+    const rows = [
+      { id: 't1', label: 'Tareas principales con sesiones y subtareas', hint: 'siempre' },
+      { id: 't2', label: 'Tareas secundarias e interrupciones', hint: 'recomendado' },
+      { id: 't3', label: 'Movimientos del kanban', hint: 'contexto' },
+      { id: 't4', label: 'Notas privadas del día', hint: 'opcional' }
+    ];
+
+    const includes = rows.map((r) => {
+      const on = !!this.state.includes[r.id];
+      return Object.assign({}, r, {
+        on: on,
+        bg: on ? '#FAF8F2' : '#FFFFFF',
+        border: on ? '#DED9CB' : '#EFEBE0',
+        toggle: () => {
+          const next = Object.assign({}, this.state.includes);
+          next[r.id] = !on;
+          this.setState({ includes: next });
+        }
+      });
+    });
+
+    return {
+      accent: accent,
+      includes: includes,
+      isMd: tab === 'md',
+      isJson: tab === 'json',
+      mdBg: tab === 'md' ? '#F3F1EA' : 'transparent',
+      mdFg: tab === 'md' ? '#1A1A18' : '#A9A497',
+      jsonBg: tab === 'json' ? '#F3F1EA' : 'transparent',
+      jsonFg: tab === 'json' ? '#1A1A18' : '#A9A497',
+      showMd: () => this.setState({ tab: 'md' }),
+      showJson: () => this.setState({ tab: 'json' }),
+      copyLabel: this.state.copied ? 'Copiado' : 'Copiar al portapapeles',
+      copy: () => this.setState({ copied: !this.state.copied })
+    };
+  }
+}
+</script>
+</body>
+</html>

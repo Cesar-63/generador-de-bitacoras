@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bitácora — Kanban</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: "IBM Plex Sans", system-ui, sans-serif; background: #F3F1EA; }
+    a { color: #B85C38; }
+    a:hover { color: #8F4526; }
+    button { font-family: inherit; cursor: pointer; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; display: flex; background: #F3F1EA; color: #1A1A18;">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; padding: 28px 20px; background: #EAE6DB; border-right: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 26px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-family: Fraunces, Georgia, serif; font-size: 25px; font-weight: 600; letter-spacing: -0.01em;">Bitácora</span>
+      <span style="font-size: 12px; color: #6E6B62; letter-spacing: 0.04em; text-transform: uppercase;">Local · sin cuenta</span>
+    </div>
+
+    <nav style="display: flex; flex-direction: column; gap: 4px;">
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        Hoy
+      </a>
+      <a href="#kanban" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>
+        Kanban
+      </a>
+      <a href="Semana.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Semana
+      </a>
+      <a href="Recordatorios.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"></path><path d="M10.5 20a2 2 0 0 0 3 0"></path></svg>
+        Recordatorios
+      </a>
+    </nav>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="padding: 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 8px;">
+      <span style="font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #6E6B62;">Tiempo en el tablero</span>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500;">09:21</span>
+      <span style="font-size: 12px; color: #6E6B62;">Semana 39, sólo tareas principales</span>
+    </div>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 30px 36px; display: flex; flex-direction: column; gap: 20px;">
+
+    <header style="display: flex; align-items: flex-end; gap: 20px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #6E6B62;">Tablero · semana 39</span>
+        <h1 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 36px; font-weight: 600; letter-spacing: -0.02em;">Kanban</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border-radius: 10px; background: #FFFFFF; border: 1px solid #DED9CB;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6B62" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
+          <span style="font-size: 14px; color: #6E6B62;">Todos los proyectos</span>
+        </div>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 15px; font-weight: 600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Nueva tarjeta
+        </button>
+      </div>
+    </header>
+
+    <div style="flex-grow: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px;">
+      <sc-for list="{{columns}}" as="col" hint-placeholder-count="4">
+        <section style="box-sizing: border-box; min-height: 0; padding: 14px; border-radius: 16px; background: {{col.bg}}; border: 1px solid {{col.border}}; display: flex; flex-direction: column; gap: 12px;">
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 9px; height: 9px; border-radius: 5px; background: {{col.dot}};"></span>
+            <h2 style="margin: 0; flex-grow: 1; font-size: 15px; font-weight: 600; letter-spacing: 0.01em;">{{col.name}}</h2>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6E6B62;">{{col.count}}</span>
+          </div>
+
+          <sc-for list="{{col.cards}}" as="card" hint-placeholder-count="2">
+            <article style="box-sizing: border-box; padding: 13px 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: flex-start; gap: 8px;">
+                <span style="flex-grow: 1; font-size: 14px; font-weight: 600; line-height: 1.35;">{{card.title}}</span>
+                <span style="flex-shrink: 0; width: 8px; height: 8px; margin-top: 5px; border-radius: 4px; background: {{card.prio}};"></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-size: 12px; padding: 3px 8px; border-radius: 999px; background: {{card.tagBg}}; color: {{card.tagFg}}; font-weight: 500;">{{card.project}}</span>
+                <span style="font-size: 12px; padding: 3px 8px; border-radius: 999px; background: #F1EDE2; color: #6E6B62; font-weight: 500;">{{card.kind}}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6B62" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6E6B62;">{{card.time}}</span>
+                <span style="font-size: 12px; color: #6E6B62;">·</span>
+                <span style="font-size: 12px; color: #6E6B62;">{{card.subs}}</span>
+                <span style="flex-grow: 1;"></span>
+                <button type="button" onClick="{{card.advance}}" aria-label="Mover a la siguiente columna" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DED9CB; background: #FAF8F2; color: #1A1A18;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>
+                </button>
+              </div>
+              <sc-if value="{{card.live}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; align-items: center; gap: 7px; padding-top: 2px;">
+                  <span style="width: 7px; height: 7px; border-radius: 4px; background: {{accent}};"></span>
+                  <span style="font-size: 12px; font-weight: 600; color: {{accent}};">Cronómetro corriendo</span>
+                </div>
+              </sc-if>
+            </article>
+          </sc-for>
+
+          <button type="button" style="min-height: 40px; border-radius: 10px; border: 1px dashed #C9C3B3; background: transparent; color: #6E6B62; font-size: 13px; font-weight: 500;">+ Añadir</button>
+        </section>
+      </sc-for>
+    </div>
+
+    <footer style="display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 14px; background: #FFFFFF; border: 1px solid #DED9CB;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6F60" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+      <span style="flex-grow: 1; font-size: 14px; color: #1A1A18;">Todo lo que llega a <strong>Hecho</strong> entra en el resumen ejecutivo de la semana con su tiempo acumulado.</span>
+      <a href="Semana.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #DED9CB; text-decoration: none; color: #1A1A18; font-size: 14px; font-weight: 600;">Ver la semana</a>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B85C38","options":["#B85C38","#2E6F60","#4B5AA8","#1A1A18"]},"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cards: [
+        { id: 'k1', title: 'Migración de endpoints de facturación', project: 'Atlas', kind: 'Principal', time: '02:15', subs: '3 subtareas', prio: '#B85C38', col: 1, live: false },
+        { id: 'k2', title: 'Revisión de incidencias de producción', project: 'Soporte', kind: 'Principal', time: '01:29', subs: '2 subtareas', prio: '#B8863B', col: 1, live: true },
+        { id: 'k3', title: 'Documentación del módulo de reportes', project: 'Atlas', kind: 'Principal', time: '00:27', subs: '1 subtarea', prio: '#6E6B62', col: 0, live: false },
+        { id: 'k4', title: 'Ajustar alertas de monitoreo', project: 'Plataforma', kind: 'Secundaria', time: '00:00', subs: 'Sin subtareas', prio: '#6E6B62', col: 0, live: false },
+        { id: 'k5', title: 'Pruebas de carga del carrito', project: 'Atlas', kind: 'Principal', time: '03:05', subs: '2 subtareas', prio: '#B8863B', col: 2, live: false },
+        { id: 'k6', title: 'Revisión de pull request del equipo', project: 'Plataforma', kind: 'Secundaria', time: '00:48', subs: 'Sin subtareas', prio: '#6E6B62', col: 2, live: false },
+        { id: 'k7', title: 'Corrección del cálculo de impuestos', project: 'Atlas', kind: 'Principal', time: '04:10', subs: '4 subtareas', prio: '#B85C38', col: 3, live: false },
+        { id: 'k8', title: 'Onboarding de la nueva integrante', project: 'Equipo', kind: 'Secundaria', time: '01:20', subs: '2 subtareas', prio: '#6E6B62', col: 3, live: false }
+      ]
+    };
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#B85C38';
+    const cards = this.state.cards;
+
+    const move = (id) => {
+      this.setState({
+        cards: this.state.cards.map((c) => (c.id === id ? Object.assign({}, c, { col: Math.min(3, c.col + 1) }) : c))
+      });
+    };
+
+    const tags = {
+      Atlas: { bg: '#DDEAE5', fg: '#2E6F60' },
+      Soporte: { bg: '#F4E3DA', fg: '#B85C38' },
+      Plataforma: { bg: '#E4E6F2', fg: '#43508F' },
+      Equipo: { bg: '#F1EDE2', fg: '#6E6B62' }
+    };
+
+    const meta = [
+      { name: 'Por hacer', dot: '#C9C3B3', bg: '#EFEBE0', border: '#DED9CB' },
+      { name: 'En curso', dot: accent, bg: '#F8F1EC', border: '#E7CFC2' },
+      { name: 'En revisión', dot: '#B8863B', bg: '#F7F1E4', border: '#E3D5B8' },
+      { name: 'Hecho', dot: '#2E6F60', bg: '#ECF3F0', border: '#CFE0DA' }
+    ];
+
+    const columns = meta.map((m, i) => {
+      const list = cards.filter((c) => c.col === i).map((c) => {
+        const t = tags[c.project] || tags.Equipo;
+        return Object.assign({}, c, {
+          tagBg: t.bg,
+          tagFg: t.fg,
+          advance: () => move(c.id)
+        });
+      });
+      return Object.assign({}, m, { cards: list, count: list.length });
+    });
+
+    return { accent: accent, columns: columns };
+  }
+}
+</script>
+</body>
+</html>

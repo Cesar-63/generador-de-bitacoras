@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bitácora — Hoy (modo oscuro)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: "IBM Plex Sans", system-ui, sans-serif; background: #121316; color: #ECEAE3; }
+    a { color: #E08A5F; }
+    a:hover { color: #F0A87F; }
+    button { font-family: inherit; cursor: pointer; }
+    input { font-family: inherit; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; display: flex; background: #121316; color: #ECEAE3;">
+
+  <aside style="width: 248px; flex-shrink: 0; box-sizing: border-box; padding: 28px 20px; background: #0E0F12; border-right: 1px solid #2A2D34; display: flex; flex-direction: column; gap: 26px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-family: Fraunces, Georgia, serif; font-size: 25px; font-weight: 600; letter-spacing: -0.01em;">Bitácora</span>
+      <span style="font-size: 12px; color: #918E86; letter-spacing: 0.04em; text-transform: uppercase;">Local · sin cuenta</span>
+    </div>
+
+    <nav style="display: flex; flex-direction: column; gap: 4px;">
+      <a href="#hoy" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; background: {{accent}}; color: #16171A; text-decoration: none; font-size: 15px; font-weight: 600;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        Hoy
+      </a>
+      <a href="Kanban.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #ECEAE3; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>
+        Kanban
+      </a>
+      <a href="Semana.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #ECEAE3; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Semana
+      </a>
+      <a href="Recordatorios.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #ECEAE3; text-decoration: none; font-size: 15px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"></path><path d="M10.5 20a2 2 0 0 0 3 0"></path></svg>
+        Recordatorios
+        <span style="margin-left: auto; min-width: 20px; text-align: center; font-size: 12px; font-weight: 600; color: #E08A5F; background: #38251C; border-radius: 10px; padding: 2px 6px;">3</span>
+      </a>
+    </nav>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="padding: 14px; border-radius: 12px; background: #1A1C20; border: 1px solid #2A2D34; display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #918E86;">Apariencia</span>
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; color: #ECEAE3; font-size: 14px; font-weight: 500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"></path></svg>
+        Modo oscuro
+        <span style="margin-left: auto; width: 40px; height: 22px; border-radius: 11px; background: {{accent}}; display: flex; align-items: center; justify-content: flex-end; padding: 3px; box-sizing: border-box;">
+          <span style="width: 16px; height: 16px; border-radius: 8px; background: #16171A;"></span>
+        </span>
+      </a>
+    </div>
+  </aside>
+
+  <main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 30px 36px; display: flex; flex-direction: column; gap: 22px;">
+
+    <header style="display: flex; align-items: flex-end; gap: 20px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #918E86;">Semana 39 · martes</span>
+        <h1 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 40px; font-weight: 600; letter-spacing: -0.02em;">22 de septiembre</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; padding-right: 14px; border-right: 1px solid #2A2D34;">
+          <span style="font-size: 12px; color: #918E86;">Registrado hoy</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500;">{{today}}</span>
+        </div>
+        <a href="Semana.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: {{accent}}; color: #16171A; text-decoration: none; font-size: 15px; font-weight: 600;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg>
+          Exportar para Claude
+        </a>
+      </div>
+    </header>
+
+    <section style="box-sizing: border-box; padding: 22px 24px; border-radius: 16px; background: #1A1C20; border: 1px solid #2A2D34; display: flex; align-items: center; gap: 24px;">
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+        <span style="display: inline-flex; align-items: center; gap: 7px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: {{accent}}; font-weight: 600;">
+          <span style="width: 8px; height: 8px; border-radius: 4px; background: {{accent}};"></span>
+          En curso
+        </span>
+        <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">{{activeTitle}}</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; padding: 4px 10px; border-radius: 999px; background: #17281F; color: #63AE99; font-weight: 500;">{{activeProject}}</span>
+          <span style="font-size: 13px; padding: 4px 10px; border-radius: 999px; background: #23262C; color: #918E86; font-weight: 500;">Tarea principal</span>
+          <span style="font-size: 13px; color: #918E86;">Inicio 14:05</span>
+        </div>
+      </div>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 54px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{clock}}</span>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" onClick="{{toggleRun}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: none; background: #ECEAE3; color: #16171A; font-size: 15px; font-weight: 600;">
+          <sc-if value="{{running}}" hint-placeholder-val="{{true}}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"></path></svg>
+          </sc-if>
+          <sc-if value="{{paused}}" hint-placeholder-val="{{false}}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8 5l11 7-11 7z"></path></svg>
+          </sc-if>
+          {{runLabel}}
+        </button>
+        <button type="button" aria-label="Detener y guardar en la bitácora" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; border: 1px solid #2A2D34; background: #23262C; color: #ECEAE3;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+        </button>
+      </div>
+    </section>
+
+    <div style="flex-grow: 1; min-height: 0; display: flex; gap: 22px;">
+
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 18px;">
+
+        <section style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <h2 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 21px; font-weight: 600;">Tareas principales</h2>
+            <span style="font-size: 13px; color: #918E86;">3 activas · 04:11 acumuladas</span>
+          </div>
+
+          <sc-for list="{{mainTasks}}" as="task" hint-placeholder-count="3">
+            <div style="box-sizing: border-box; padding: 14px 16px; border-radius: 14px; background: #1A1C20; border: 1px solid {{task.border}}; display: flex; align-items: center; gap: 14px;">
+              <button type="button" onClick="{{task.pick}}" aria-label="Iniciar cronómetro de esta tarea" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 1px solid {{task.border}}; background: {{task.playBg}}; color: {{task.playFg}};">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8 5l11 7-11 7z"></path></svg>
+              </button>
+              <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px;">
+                <span style="font-size: 16px; font-weight: 600;">{{task.title}}</span>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #918E86;">
+                  <span>{{task.project}}</span>
+                  <span>·</span>
+                  <span>{{task.subs}}</span>
+                </div>
+                <div style="height: 6px; border-radius: 3px; background: #23262C; overflow: hidden;">
+                  <div style="width: {{task.pct}}%; height: 6px; border-radius: 3px; background: {{task.bar}};"></div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 500;">{{task.time}}</span>
+                <span style="font-size: 12px; color: #918E86;">{{task.state}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <h2 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 21px; font-weight: 600;">Tareas secundarias</h2>
+            <span style="font-size: 13px; color: #918E86;">Interrupciones y apoyo · 00:45</span>
+          </div>
+
+          <div style="box-sizing: border-box; border-radius: 14px; background: #1A1C20; border: 1px solid #2A2D34; overflow: hidden;">
+            <sc-for list="{{sideTasks}}" as="side" hint-placeholder-count="3">
+              <label style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px; border-bottom: 1px solid #24272D; cursor: pointer;">
+                <input type="checkbox" checked="{{side.done}}" onChange="{{side.toggle}}" style="width: 18px; height: 18px; accent-color: #63AE99;">
+                <span style="flex-grow: 1; font-size: 15px; color: {{side.fg}}; text-decoration: {{side.deco}};">{{side.title}}</span>
+                <span style="font-size: 13px; padding: 3px 9px; border-radius: 999px; background: #23262C; color: #918E86;">{{side.tag}}</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #918E86;">{{side.time}}</span>
+              </label>
+            </sc-for>
+            <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#918E86" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              <label for="nueva-oscuro" class="sr">Nueva tarea secundaria</label>
+              <input id="nueva-oscuro" type="text" placeholder="Añadir tarea secundaria y pulsar Enter" style="flex-grow: 1; height: 36px; border: none; outline: none; background: transparent; font-size: 15px; color: #ECEAE3;">
+              <span style="font-size: 12px; color: #918E86; border: 1px solid #2A2D34; border-radius: 6px; padding: 3px 7px;">S</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <div style="width: 336px; flex-shrink: 0; display: flex; flex-direction: column; gap: 18px;">
+
+        <section style="box-sizing: border-box; padding: 18px; border-radius: 16px; background: #1A1C20; border: 1px solid #2A2D34; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600; flex-grow: 1;">Recordatorios</h2>
+            <a href="Recordatorios.dc.html" style="font-size: 13px; font-weight: 600; text-decoration: none; color: {{accent}};">Ver todos</a>
+          </div>
+
+          <sc-for list="{{reminders}}" as="rem" hint-placeholder-count="3">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; padding: 5px 8px; border-radius: 8px; background: {{rem.chipBg}}; color: {{rem.chipFg}};">{{rem.at}}</span>
+              <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                <span style="font-size: 14px; font-weight: 500; line-height: 1.35;">{{rem.text}}</span>
+                <span style="font-size: 12px; color: #918E86;">{{rem.meta}}</span>
+              </div>
+            </div>
+          </sc-for>
+
+          <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 10px; border: 1px dashed #3A3E46; background: #16181C; color: #918E86; font-size: 14px; font-weight: 500;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            Nuevo recordatorio
+          </button>
+        </section>
+
+        <section style="box-sizing: border-box; padding: 18px; border-radius: 16px; background: #23262C; border: 1px solid #2A2D34; display: flex; flex-direction: column; gap: 14px;">
+          <h2 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600;">Cierre del día</h2>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #B6B2A9;">Al cerrar, la jornada queda fijada en la bitácora y entra en el export semanal.</p>
+          <div style="display: flex; gap: 10px;">
+            <div style="flex-grow: 1; padding: 10px 12px; border-radius: 10px; background: #16181C;">
+              <span style="display: block; font-size: 12px; color: #B6B2A9;">Principales</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 17px;">04:11</span>
+            </div>
+            <div style="flex-grow: 1; padding: 10px 12px; border-radius: 10px; background: #16181C;">
+              <span style="display: block; font-size: 12px; color: #B6B2A9;">Secundarias</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 17px;">00:45</span>
+            </div>
+          </div>
+          <button type="button" style="min-height: 44px; border-radius: 10px; border: none; background: {{accent}}; color: #16171A; font-size: 15px; font-weight: 600;">Cerrar jornada</button>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#E08A5F","options":["#E08A5F","#63AE99","#8A93E0","#ECEAE3"]},"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      running: true,
+      seconds: 5384,
+      activeId: 'p2',
+      done: { s1: true, s2: false, s3: false }
+    };
+  }
+
+  componentDidMount() {
+    this.tick = setInterval(() => {
+      if (this.state.running) {
+        this.setState({ seconds: this.state.seconds + 1 });
+      }
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.tick);
+  }
+
+  fmt(total) {
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = (n) => (n < 10 ? '0' + n : '' + n);
+    return pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#E08A5F';
+    const running = this.state.running;
+
+    const rows = [
+      { id: 'p1', title: 'Migración de endpoints de facturación', project: 'Proyecto Atlas', subs: '3 subtareas', time: '02:15:00', pct: 62, state: 'En pausa' },
+      { id: 'p2', title: 'Revisión de incidencias de producción', project: 'Soporte', subs: '2 subtareas', time: this.fmt(this.state.seconds), pct: 45, state: 'Corriendo' },
+      { id: 'p3', title: 'Documentación del módulo de reportes', project: 'Proyecto Atlas', subs: '1 subtarea', time: '00:27:10', pct: 20, state: 'Sin iniciar' }
+    ];
+
+    const mainTasks = rows.map((r) => {
+      const live = r.id === this.state.activeId;
+      return Object.assign({}, r, {
+        border: live ? accent : '#2A2D34',
+        playBg: live ? accent : '#23262C',
+        playFg: live ? '#16171A' : '#918E86',
+        bar: live ? accent : '#3A3E46',
+        state: live ? (running ? 'Corriendo' : 'En pausa') : r.state,
+        pick: () => this.setState({ activeId: r.id, running: true })
+      });
+    });
+
+    const sides = [
+      { id: 's1', title: 'Daily con el equipo', tag: 'Reunión', time: '00:15' },
+      { id: 's2', title: 'Responder correos de clientes', tag: 'Soporte', time: '00:22' },
+      { id: 's3', title: 'Actualizar el tablero del sprint', tag: 'Gestión', time: '00:08' }
+    ];
+
+    const sideTasks = sides.map((s) => {
+      const isDone = !!this.state.done[s.id];
+      return Object.assign({}, s, {
+        done: isDone,
+        fg: isDone ? '#918E86' : '#ECEAE3',
+        deco: isDone ? 'line-through' : 'none',
+        toggle: () => {
+          const next = Object.assign({}, this.state.done);
+          next[s.id] = !isDone;
+          this.setState({ done: next });
+        }
+      });
+    });
+
+    const reminders = [
+      { at: '16:00', text: 'Enviar avance del módulo de reportes', meta: 'En 40 min · notificación del navegador', chipBg: '#38251C', chipFg: '#E08A5F' },
+      { at: '17:30', text: 'Cerrar la bitácora del día', meta: 'Diario · de lunes a viernes', chipBg: '#23262C', chipFg: '#B6B2A9' },
+      { at: 'Vie', text: 'Generar el resumen ejecutivo de la semana', meta: 'Viernes 17:00 · export para Claude', chipBg: '#17281F', chipFg: '#63AE99' }
+    ];
+
+    const active = rows.filter((r) => r.id === this.state.activeId)[0] || rows[1];
+
+    return {
+      accent: accent,
+      today: '04:56:24',
+      clock: this.fmt(this.state.seconds),
+      running: running,
+      paused: !running,
+      runLabel: running ? 'Pausar' : 'Reanudar',
+      activeTitle: active.title,
+      activeProject: active.project,
+      toggleRun: () => this.setState({ running: !running }),
+      mainTasks: mainTasks,
+      sideTasks: sideTasks,
+      reminders: reminders
+    };
+  }
+}
+</script>
+</body>
+</html>

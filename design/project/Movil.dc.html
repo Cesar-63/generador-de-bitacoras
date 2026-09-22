@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bitácora — Captura rápida (móvil)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: "IBM Plex Sans", system-ui, sans-serif; background: #121316; color: #ECEAE3; }
+    a { color: #E08A5F; }
+    a:hover { color: #F0A87F; }
+    button { font-family: inherit; cursor: pointer; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #121316; color: #ECEAE3; display: flex; flex-direction: column;">
+
+  <header style="box-sizing: border-box; padding: 20px 20px 14px; display: flex; align-items: center; gap: 12px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #918E86;">Martes 22 · semana 39</span>
+      <span style="font-family: Fraunces, Georgia, serif; font-size: 24px; font-weight: 600;">Bitácora</span>
+    </div>
+    <a href="Recordatorios.dc.html" aria-label="Recordatorios" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #1A1C20; border: 1px solid #2A2D34; color: #ECEAE3; text-decoration: none;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"></path><path d="M10.5 20a2 2 0 0 0 3 0"></path></svg>
+    </a>
+  </header>
+
+  <section style="box-sizing: border-box; margin: 0 20px; padding: 22px 20px; border-radius: 20px; background: #1A1C20; border: 1px solid #2A2D34; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: {{accent}};"></span>
+      <span style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: {{accent}}; font-weight: 600;">{{statusLabel}}</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 12px; color: #918E86;">desde 14:05</span>
+    </div>
+
+    <span style="font-size: 17px; font-weight: 600; line-height: 1.35;">Revisión de incidencias de producción</span>
+
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 52px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{clock}}</span>
+
+    <div style="display: flex; gap: 10px;">
+      <button type="button" onClick="{{toggleRun}}" style="flex-grow: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 14px; border: none; background: {{accent}}; color: #16171A; font-size: 16px; font-weight: 600;">{{runLabel}}</button>
+      <button type="button" aria-label="Guardar y cerrar la sesión" style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 14px; border: 1px solid #2A2D34; background: #23262C; color: #ECEAE3;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+      </button>
+    </div>
+  </section>
+
+  <div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 20px 0; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <h2 style="margin: 0; flex-grow: 1; font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600;">Hoy</h2>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #918E86;">04:56</span>
+    </div>
+
+    <sc-for list="{{tasks}}" as="task" hint-placeholder-count="4">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #1A1C20; border: 1px solid {{task.border}};">
+        <button type="button" onClick="{{task.pick}}" aria-label="Arrancar el cronómetro de esta tarea" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 1px solid {{task.border}}; background: {{task.bg}}; color: {{task.fg}};">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8 5l11 7-11 7z"></path></svg>
+        </button>
+        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 15px; font-weight: 500; line-height: 1.3;">{{task.title}}</span>
+          <span style="font-size: 12px; color: #918E86;">{{task.kind}}</span>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #B6B2A9;">{{task.time}}</span>
+      </div>
+    </sc-for>
+
+    <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 14px; border: 1px dashed #3A3E46; background: transparent; color: #918E86; font-size: 15px; font-weight: 500;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+      Añadir tarea
+    </button>
+  </div>
+
+  <nav style="box-sizing: border-box; padding: 10px 12px 18px; border-top: 1px solid #2A2D34; background: #0E0F12; display: flex; gap: 4px;">
+    <a href="#hoy" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; padding-top: 8px; border-radius: 12px; text-decoration: none; color: {{accent}}; font-size: 11px; font-weight: 600;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      Hoy
+    </a>
+    <a href="Kanban.dc.html" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; padding-top: 8px; border-radius: 12px; text-decoration: none; color: #918E86; font-size: 11px; font-weight: 500;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg>
+      Kanban
+    </a>
+    <a href="Semana.dc.html" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; padding-top: 8px; border-radius: 12px; text-decoration: none; color: #918E86; font-size: 11px; font-weight: 500;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+      Semana
+    </a>
+    <a href="Main.dc.html" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; padding-top: 8px; border-radius: 12px; text-decoration: none; color: #918E86; font-size: 11px; font-weight: 500;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18"></path></svg>
+      Escritorio
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#E08A5F","options":["#E08A5F","#63AE99","#8A93E0","#ECEAE3"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { running: true, seconds: 5384, activeId: 'p2' };
+  }
+
+  componentDidMount() {
+    this.tick = setInterval(() => {
+      if (this.state.running) {
+        this.setState({ seconds: this.state.seconds + 1 });
+      }
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.tick);
+  }
+
+  fmt(total) {
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const pad = (n) => (n < 10 ? '0' + n : '' + n);
+    return pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#E08A5F';
+    const running = this.state.running;
+
+    const rows = [
+      { id: 'p1', title: 'Migración de endpoints de facturación', kind: 'Principal · Atlas', time: '02:15' },
+      { id: 'p2', title: 'Revisión de incidencias de producción', kind: 'Principal · Soporte', time: '01:29' },
+      { id: 'p3', title: 'Documentación del módulo de reportes', kind: 'Principal · Atlas', time: '00:27' },
+      { id: 's2', title: 'Responder correos de clientes', kind: 'Secundaria', time: '00:22' }
+    ];
+
+    const tasks = rows.map((r) => {
+      const live = r.id === this.state.activeId;
+      return Object.assign({}, r, {
+        border: live ? accent : '#2A2D34',
+        bg: live ? accent : '#23262C',
+        fg: live ? '#16171A' : '#918E86',
+        pick: () => this.setState({ activeId: r.id, running: true })
+      });
+    });
+
+    return {
+      accent: accent,
+      clock: this.fmt(this.state.seconds),
+      runLabel: running ? 'Pausar' : 'Reanudar',
+      statusLabel: running ? 'En curso' : 'En pausa',
+      toggleRun: () => this.setState({ running: !running }),
+      tasks: tasks
+    };
+  }
+}
+</script>
+</body>
+</html>

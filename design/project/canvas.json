@@ -1,0 +1,101 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-09-22T15:02:00Z"
+  },
+  "title": "Generador de Bitácoras",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1024,
+      "title": "Hoy · claro",
+      "is_interactive": true
+    },
+    "Oscuro.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 1024,
+      "title": "Hoy · modo oscuro",
+      "is_interactive": true
+    },
+    "Kanban.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 1024,
+      "title": "Kanban",
+      "is_interactive": true
+    },
+    "Semana.dc.html": {
+      "x": 0,
+      "y": 1344,
+      "w": 1440,
+      "h": 1024,
+      "title": "Semana y export para Claude",
+      "is_interactive": true
+    },
+    "Recordatorios.dc.html": {
+      "x": 1520,
+      "y": 1344,
+      "w": 520,
+      "h": 760,
+      "title": "Recordatorios",
+      "is_interactive": true
+    },
+    "Movil.dc.html": {
+      "x": 2120,
+      "y": 1344,
+      "w": 390,
+      "h": 844,
+      "title": "Móvil · captura rápida",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Oscuro.dc.html",
+    "Kanban.dc.html",
+    "Semana.dc.html",
+    "Recordatorios.dc.html",
+    "Movil.dc.html"
+  ],
+  "notes": {
+    "n1": {
+      "x": 0,
+      "y": -260,
+      "text": "Escritorio · cronómetro, tareas y tablero",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "n2": {
+      "x": 0,
+      "y": 1084,
+      "text": "Semana, recordatorios y móvil",
+      "kind": "title1",
+      "maxW": 2510
+    },
+    "n3": {
+      "x": 2600,
+      "y": 1344,
+      "text": "El export arma un .md con front-matter (semana, rango, totales) más una sección por tarea principal con sesiones y subtareas. Claude lo lee de corrido y devuelve el resumen ejecutivo.",
+      "w": 360,
+      "fill": "orange"
+    },
+    "n4": {
+      "x": 2600,
+      "y": 1860,
+      "text": "Todo vive en el navegador: no hacen falta secrets todavía. Sólo si quieres que la app genere el resumen sola haría falta una API key de Anthropic, y esa llamada tiene que salir de un backend, nunca del navegador.",
+      "w": 360,
+      "fill": "teal"
+    }
+  },
+  "designSystems": []
+}

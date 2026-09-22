@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bitácora — Nuevo recordatorio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: "IBM Plex Sans", system-ui, sans-serif; background: #F3F1EA; }
+    a { color: #B85C38; }
+    a:hover { color: #8F4526; }
+    button { font-family: inherit; cursor: pointer; }
+    input, select { font-family: inherit; }
+  </style>
+</helmet>
+<div style="width: 520px; height: 760px; box-sizing: border-box; padding: 24px; background: #F3F1EA; color: #1A1A18; display: flex; flex-direction: column; gap: 18px;">
+
+  <div style="box-sizing: border-box; padding: 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 16px;">
+
+    <div style="display: flex; align-items: flex-start; gap: 12px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+        <h1 style="margin: 0; font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600;">Nuevo recordatorio</h1>
+        <span style="font-size: 13px; color: #6E6B62;">Se avisa en el navegador y queda en la bitácora del día.</span>
+      </div>
+      <a href="Main.dc.html" aria-label="Cerrar" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; color: #6E6B62; text-decoration: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <label for="texto" style="font-size: 13px; font-weight: 600; color: #4A4841;">Recordarme</label>
+      <input id="texto" type="text" value="Enviar avance del módulo de reportes" style="box-sizing: border-box; width: 100%; min-height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #DED9CB; background: #FAF8F2; font-size: 15px; color: #1A1A18;">
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 7px;">
+        <label for="fecha" style="font-size: 13px; font-weight: 600; color: #4A4841;">Día</label>
+        <input id="fecha" type="date" value="2026-09-22" style="box-sizing: border-box; width: 100%; min-height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #DED9CB; background: #FAF8F2; font-size: 15px; color: #1A1A18;">
+      </div>
+      <div style="width: 150px; display: flex; flex-direction: column; gap: 7px;">
+        <label for="hora" style="font-size: 13px; font-weight: 600; color: #4A4841;">Hora</label>
+        <input id="hora" type="time" value="16:00" style="box-sizing: border-box; width: 100%; min-height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #DED9CB; background: #FAF8F2; font-size: 15px; font-family: 'IBM Plex Mono', monospace; color: #1A1A18;">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span style="font-size: 13px; font-weight: 600; color: #4A4841;">Repetición</span>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <sc-for list="{{repeats}}" as="rep" hint-placeholder-count="4">
+          <button type="button" onClick="{{rep.pick}}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid {{rep.border}}; background: {{rep.bg}}; color: {{rep.fg}}; font-size: 14px; font-weight: 500;">{{rep.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <label for="tarea" style="font-size: 13px; font-weight: 600; color: #4A4841;">Vincular a una tarea</label>
+      <select id="tarea" style="box-sizing: border-box; width: 100%; min-height: 46px; padding: 0 12px; border-radius: 10px; border: 1px solid #DED9CB; background: #FAF8F2; font-size: 15px; color: #1A1A18;">
+        <option>Documentación del módulo de reportes · Atlas</option>
+        <option>Migración de endpoints de facturación · Atlas</option>
+        <option>Sin vincular</option>
+      </select>
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: 10px; background: #FAF8F2; border: 1px solid #DED9CB; cursor: pointer;">
+      <input type="checkbox" checked="{{timerOn}}" onChange="{{toggleTimer}}" style="width: 18px; height: 18px; accent-color: #2E6F60;">
+      <span style="flex-grow: 1; font-size: 14px; font-weight: 500;">Arrancar el cronómetro al avisar</span>
+    </label>
+
+    <div style="display: flex; gap: 10px;">
+      <a href="Main.dc.html" style="flex-grow: 1; display: inline-flex; align-items: center; justify-content: center; min-height: 46px; border-radius: 10px; border: 1px solid #DED9CB; background: #FFFFFF; color: #1A1A18; text-decoration: none; font-size: 15px; font-weight: 600;">Cancelar</a>
+      <button type="button" style="flex-grow: 2; min-height: 46px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 15px; font-weight: 600;">Guardar recordatorio</button>
+    </div>
+  </div>
+
+  <section style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 18px 20px; border-radius: 18px; background: #EAE6DB; border: 1px solid #DED9CB; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <h2 style="margin: 0; flex-grow: 1; font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600;">Activos</h2>
+      <span style="font-size: 13px; color: #6E6B62;">3 esta semana</span>
+    </div>
+
+    <sc-for list="{{active}}" as="item" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 12px; background: #FFFFFF; border: 1px solid #DED9CB;">
+        <span style="flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; padding: 5px 8px; border-radius: 8px; background: #F1EDE2; color: #4A4841;">{{item.at}}</span>
+        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 14px; font-weight: 500;">{{item.text}}</span>
+          <span style="font-size: 12px; color: #6E6B62;">{{item.meta}}</span>
+        </div>
+        <button type="button" aria-label="Eliminar recordatorio" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: #6E6B62;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"></path></svg>
+        </button>
+      </div>
+    </sc-for>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B85C38","options":["#B85C38","#2E6F60","#4B5AA8","#1A1A18"]},"$preview":{"width":520,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { repeat: 'once', timerOn: false };
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#B85C38';
+    const opts = [
+      { id: 'once', label: 'Una vez' },
+      { id: 'daily', label: 'Cada día' },
+      { id: 'week', label: 'Días hábiles' },
+      { id: 'friday', label: 'Viernes' }
+    ];
+
+    const repeats = opts.map((o) => {
+      const on = o.id === this.state.repeat;
+      return {
+        label: o.label,
+        bg: on ? accent : '#FFFFFF',
+        fg: on ? '#FFFFFF' : '#4A4841',
+        border: on ? accent : '#DED9CB',
+        pick: () => this.setState({ repeat: o.id })
+      };
+    });
+
+    return {
+      accent: accent,
+      repeats: repeats,
+      timerOn: this.state.timerOn,
+      toggleTimer: () => this.setState({ timerOn: !this.state.timerOn }),
+      active: [
+        { at: '16:00', text: 'Enviar avance del módulo de reportes', meta: 'Hoy · vinculado a Atlas' },
+        { at: '17:30', text: 'Cerrar la bitácora del día', meta: 'Días hábiles · arranca el cierre' },
+        { at: 'Vie 17:00', text: 'Generar el resumen ejecutivo de la semana', meta: 'Semanal · prepara el export para Claude' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
