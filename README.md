@@ -23,7 +23,9 @@ de trabajo y el repositorio es público.
 ```bash
 python3 tools/serve.py                              # la app sobre el archivo
 python3 tools/bitacora.py ver                       # listar desde la terminal
-python3 tools/bitacora.py add "Título" --proyecto Atlas
+python3 tools/bitacora.py epica add "Facturación electrónica"
+python3 tools/bitacora.py historia "Como cliente quiero X" --epica FACT
+python3 tools/bitacora.py add "Título" --proyecto Atlas --historia HU-1
 python3 tools/bitacora.py tiempo <id> 45            # sumar 45 minutos
 python3 tools/bitacora.py cerrar <id>
 python3 tools/bitacora.py semana                    # el markdown para Claude
@@ -50,7 +52,10 @@ nada; es lo que lee Claude al abrir la carpeta.
   tiempo manual para lo que se te olvidó cronometrar.
 - **Tareas secundarias** para interrupciones y apoyo, con su propio total.
 - **Kanban** de cuatro columnas con arrastrar y soltar, y botones ← → para teclado y móvil.
-  Cada movimiento queda registrado con su hora.
+  Cada movimiento queda registrado con su hora. Se puede filtrar por épica o etiqueta.
+- **Backlog**: épicas → historias de usuario → tareas, con el tiempo y el avance
+  acumulados en cada nivel. Las etiquetas son planas y transversales (`bug`,
+  `deuda-tecnica`), y se filtran con un clic desde cualquier chip.
 - **Recordatorios** con repetición (una vez, diario, días hábiles, semanal), vinculables a
   una tarea y capaces de arrancar el cronómetro al avisar. Usan las notificaciones del
   navegador si les das permiso; si no, avisan dentro de la app.
@@ -71,7 +76,10 @@ nada; es lo que lee Claude al abrir la carpeta.
 
 ## Modelo de datos previsto
 
-- **Tarea principal**: título, proyecto, estado kanban, subtareas, sesiones de cronómetro.
+- **Épica**: clave corta (`FACT`), título, nota. Agrupa historias.
+- **Historia de usuario**: clave (`HU-7`), épica a la que pertenece, criterios de aceptación.
+- **Tarea principal**: título, proyecto, estado kanban, subtareas, sesiones de cronómetro,
+  etiquetas, y la historia o épica de la que cuelga.
 - **Tarea secundaria**: título, etiqueta, tiempo, hecha/no hecha. No ocupa tarjeta propia.
 - **Sesión**: `inicio`, `fin`, `tarea_id`. El tiempo nunca se escribe a mano.
 - **Recordatorio**: texto, fecha/hora, repetición, tarea vinculada, si arranca el cronómetro.

@@ -6,7 +6,8 @@ administre las tareas** desde aquí mientras la app está abierta en el navegado
 ## Dónde están los datos
 
 `data/bitacora.json` es la **fuente de verdad**. Un solo archivo JSON con todo:
-tareas, sesiones de cronómetro, movimientos del tablero y recordatorios.
+épicas, historias de usuario, tareas con sus etiquetas, sesiones de cronómetro,
+movimientos del tablero y recordatorios.
 
 - `data/bitacora.md` es un **espejo generado**: se reescribe entero en cada
   guardado. Sírvete de él para mirar el estado de un vistazo, pero no lo edites:
@@ -23,7 +24,13 @@ Prefiere la CLI: valida el esquema, genera los ids y regenera el espejo.
 ```bash
 python3 tools/bitacora.py ver                       # listar con ids
 python3 tools/bitacora.py ver --todas               # incluidas las cerradas
-python3 tools/bitacora.py add "Título" --proyecto Atlas [--tipo main|side]
+python3 tools/bitacora.py epica ver                 # árbol de épicas e historias
+python3 tools/bitacora.py epica add "Facturación electrónica" [--clave FACT]
+python3 tools/bitacora.py historia "Como cliente quiero X" --epica FACT [--clave HU-7]
+python3 tools/bitacora.py asignar <id> --historia HU-7   # o --epica FACT, o --ninguna
+python3 tools/bitacora.py etiquetar <id> bug deuda-tecnica [--quitar]
+python3 tools/bitacora.py add "Título" --proyecto Atlas [--tipo main|side] \
+    [--historia HU-7 | --epica FACT] [--etiqueta bug,urgente]
 python3 tools/bitacora.py sub <id> "Subtarea"
 python3 tools/bitacora.py check <id> 2              # cierra/reabre la subtarea 2
 python3 tools/bitacora.py tiempo <id> 45            # suma 45 min (--fin 17:30)
@@ -46,7 +53,20 @@ esquema de abajo.
   "version": 1,
   "settings": { "theme": "system|light|dark", "accent": "clay|teal|indigo|ink", "author": "" },
   "ui": { "view": "hoy", "weekOffset": 0, "tab": "md",
+          "filter": { "epic": "", "tag": "" },
           "includes": { "side": true, "board": true, "reminders": true, "prompt": true } },
+  "epics": [{
+    "id": "…", "key": "FACT",       // clave corta, única, en mayúsculas
+    "title": "Facturación electrónica",
+    "note": "", "done": false, "createdAt": "…"
+  }],
+  "stories": [{
+    "id": "…", "epicId": "…",       // toda historia cuelga de una épica
+    "key": "HU-7",
+    "title": "Como cliente quiero descargar mi factura",
+    "note": "",                     // criterios de aceptación
+    "done": false, "createdAt": "…"
+  }],
   "tasks": [{
     "id": "a1b2c3d4e5",            // único; cualquier cadena estable sirve
     "title": "Migrar endpoints",
@@ -54,6 +74,9 @@ esquema de abajo.
     "project": "Atlas",             // texto libre, puede ir vacío
     "column": "todo",               // todo | doing | review | done
     "priority": "normal",           // baja | normal | alta
+    "tags": ["backend", "deuda-tecnica"],   // minúsculas, sin espacios ni #
+    "epicId": null,                 // sólo se usa si storyId es null
+    "storyId": null,                // si está, la épica sale de la historia
     "note": "",                     // se copia al resumen semanal
     "subtasks": [{ "id": "…", "title": "…", "done": false }],
     "sessions": [{ "id": "…", "start": "2026-09-22T12:10:00Z", "end": "2026-09-22T13:25:00Z" }],
@@ -78,6 +101,22 @@ esquema de abajo.
 - `reminders[].at` → hora **local sin zona**, `YYYY-MM-DDTHH:MM`. Así se dispara
   a las 17:30 de quien mira, no a las 17:30 UTC.
 
+## Épicas, historias y etiquetas
+
+Tres niveles: **épica → historia de usuario → tarea**. Una tarea puede colgar de
+una historia, o directamente de una épica cuando no hay historia de por medio.
+
+- **`storyId` manda.** Si la tarea tiene historia, la épica se deduce de ella y
+  `epicId` se ignora. Así nunca quedan en desacuerdo. Al asignar una historia,
+  la CLI rellena los dos campos; al asignar sólo épica, pone `storyId` en `null`.
+- **Las claves son el identificador humano**: `FACT`, `HU-7`. La CLI las acepta
+  igual que los ids, y son lo que aparece en el resumen semanal. Las de épica se
+  deducen del título si no las das; las de historia se numeran solas.
+- **Las etiquetas son planas y transversales**: `bug`, `deuda-tecnica`,
+  `cliente-acme`. Para qué tipo de trabajo es, no a qué pertenece — eso lo dice
+  la épica. Se guardan en minúsculas, sin `#` y con guiones en vez de espacios.
+- Borrar una épica o una historia **no borra sus tareas**: quedan sin asignar.
+
 ## Reglas
 
 1. **No inventes tiempo.** Las `sessions` son el registro de lo que realmente se
@@ -96,9 +135,10 @@ esquema de abajo.
 ## El resumen semanal
 
 El objetivo del proyecto. `python3 tools/bitacora.py semana` escribe el mismo
-markdown que exporta la app: front-matter con semana y totales, una sección por
-tarea principal con sus sesiones y subtareas, secundarias, movimientos del
-tablero y la instrucción final. Cuando pida el resumen ejecutivo, genera ese
+markdown que exporta la app: front-matter con semana y totales, el tiempo
+repartido por épica, una sección por tarea principal con su épica, historia,
+etiquetas, sesiones y subtareas, las secundarias, los movimientos del tablero y
+la instrucción final. Cuando pida el resumen ejecutivo, genera ese
 archivo y trabaja sobre él en vez de leer el JSON crudo.
 
 ## La app
