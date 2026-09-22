@@ -4,13 +4,36 @@ App web para llevar bitácora de trabajo: cronómetro, tareas principales y secu
 recordatorios, tablero kanban y modo oscuro. El objetivo final es exportar un archivo
 que Claude pueda leer para escribir el resumen ejecutivo de la semana.
 
-Estado actual: **diseño de la interfaz**, publicado como canvas de artboards interactivos.
-Las fuentes viven en `design/project/` (`canvas.json` es el índice; cada `.dc.html` es una
-pantalla).
+Estado actual: **app funcionando**. Sin build, sin dependencias, sin servidor: abre
+`index.html` en el navegador (doble clic o cualquier hosting estático) y ya está.
+El diseño previo sigue en `design/project/` como referencia.
+
+## Archivos
+
+- `index.html` — el armazón de la app.
+- `app.css` — tokens de color (claro/oscuro), tipografía y componentes.
+- `app.js` — estado, cronómetro, tablero, recordatorios y generación del export.
+- `tools/build-artifact.py` — genera `dist/page.html` para publicarla como Artifact.
+
+## Qué hace
+
+- **Cronómetro**: uno a la vez, con las sesiones guardadas por tarea. Sobrevive a recargas.
+  Arrancar una tarea de *Por hacer* la mueve sola a *En curso*.
+- **Tareas principales** con proyecto, prioridad, subtareas, notas, sesiones editables y
+  tiempo manual para lo que se te olvidó cronometrar.
+- **Tareas secundarias** para interrupciones y apoyo, con su propio total.
+- **Kanban** de cuatro columnas con arrastrar y soltar, y botones ← → para teclado y móvil.
+  Cada movimiento queda registrado con su hora.
+- **Recordatorios** con repetición (una vez, diario, días hábiles, semanal), vinculables a
+  una tarea y capaces de arrancar el cronómetro al avisar. Usan las notificaciones del
+  navegador si les das permiso; si no, avisan dentro de la app.
+- **Semana**: tiempo por día, totales, y el panel de exportación en Markdown o JSON.
+- **Modo oscuro** (auto, claro u oscuro) y cuatro colores de acento.
+- **Copia de seguridad**: descarga y restaura todo en un `.json`.
 
 ## Pantallas
 
-| Archivo | Pantalla |
+| Artboard | Pantalla |
 | --- | --- |
 | `Main.dc.html` | Hoy — cronómetro en curso, tareas principales y secundarias, recordatorios (claro) |
 | `Oscuro.dc.html` | La misma pantalla en modo oscuro |
