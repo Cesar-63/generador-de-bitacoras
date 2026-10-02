@@ -332,6 +332,61 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--good); f
 .kcard-title { font-size: 14px; font-weight: 600; line-height: 1.35; }
 .kcard-foot { display: flex; align-items: center; gap: 6px; }
 
+/* ---------- horario ---------- */
+
+.sched { position: relative; margin: 8px 0 4px; }
+.sched-hours { position: absolute; top: 0; bottom: 0; left: 0; width: 48px; }
+.sched-hour { position: absolute; left: 0; transform: translateY(-50%); font-size: 12px; color: var(--muted); line-height: 1; }
+.sched-area { position: absolute; top: 0; bottom: 0; left: 56px; right: 0; cursor: cell; }
+.sched-area.off { cursor: default; }
+.sched-area.over { outline: 2px dashed var(--accent); outline-offset: 2px; border-radius: var(--r-s); }
+.sched-work { position: absolute; left: 0; right: 0; background: var(--soft); border-radius: var(--r-s); }
+.sched-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--border); pointer-events: none; }
+.sched-line.half { border-top: 1px dashed var(--hairline); }
+
+.sched-gap {
+  position: absolute; left: 2px; right: 2px; min-height: 6px;
+  display: flex; align-items: flex-start; padding: 2px 10px; overflow: hidden;
+  border: 1px dashed var(--warn); border-radius: var(--r-s);
+  background: var(--warn-soft); color: var(--warn);
+  font: inherit; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer;
+}
+.sched-gap:hover { border-style: solid; }
+.sched-gap > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.sched-block {
+  position: absolute; z-index: 2;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 4px 9px 8px; overflow: hidden;
+  border: 1px solid var(--accent); border-left-width: 4px; border-radius: var(--r-s);
+  background: var(--accent-soft); color: var(--ink);
+  cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.sched-block.side { border-color: var(--good); background: var(--good-soft); }
+.sched-block.live { border-style: dashed; border-left-style: solid; cursor: pointer; }
+.sched-block.dragging { z-index: 6; cursor: grabbing; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+.sched-block.tight { flex-direction: row; align-items: center; gap: 8px; padding-top: 0; padding-bottom: 0; }
+.sched-title { font-size: 13px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sched-time { font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+.sched-block.overlap .sched-time { color: var(--danger); }
+.sched-grip { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; cursor: ns-resize; touch-action: none; }
+.sched-block.tight .sched-grip::after { display: none; }
+.sched-grip::after {
+  content: ""; position: absolute; left: 50%; bottom: 2px;
+  width: 24px; height: 3px; margin-left: -12px; border-radius: 2px;
+  background: currentColor; opacity: .3;
+}
+.sched-now { position: absolute; z-index: 4; left: -6px; right: 0; border-top: 2px solid var(--danger); pointer-events: none; }
+.sched-now::before { content: ""; position: absolute; left: 0; top: -5px; width: 8px; height: 8px; border-radius: 4px; background: var(--danger); }
+
+.sched-what { display: flex; flex-direction: column; gap: 1px; }
+.sched-what > span:first-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sched-row { width: 100%; border: none; background: transparent; color: inherit; font: inherit; text-align: left; }
+.list > * + .sched-row { border-top: 1px solid var(--hairline); }
+.sched-task { cursor: grab; }
+.sched-task .line-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sched-task:active { cursor: grabbing; }
+
 /* ---------- semana ---------- */
 
 .days { display: flex; align-items: flex-end; gap: 14px; height: 180px; border-bottom: 1px solid var(--border); padding: 0 2px; }
@@ -344,6 +399,13 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--good); f
 .day-labels { display: flex; gap: 14px; padding: 0 2px; }
 .day-labels > span { flex-grow: 1; text-align: center; font-size: 13px; }
 .day-labels > span.off { color: var(--faint); }
+.day-labels > .day-link {
+  flex-grow: 1; min-height: 32px; padding: 0;
+  border: none; border-radius: var(--r-s); background: transparent; color: var(--ink);
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.day-labels > .day-link.off { color: var(--faint); }
+.day-labels > .day-link:hover { background: var(--chip); color: var(--accent); }
 
 .stats { display: flex; gap: 12px; flex-wrap: wrap; }
 .stat { flex: 1 1 130px; padding: 12px 14px; border-radius: var(--r-m); background: var(--soft); border: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 2px; }
@@ -430,5 +492,7 @@ button[disabled]:hover { background: transparent; color: var(--muted); }
   h1 { font-size: 27px; }
   .board { grid-template-columns: minmax(0, 1fr); }
   .days { gap: 8px; }
+  .sched-hours { width: 40px; }
+  .sched-area { left: 46px; }
   .day-labels { gap: 8px; }
 }

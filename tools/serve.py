@@ -36,8 +36,9 @@ LOCK = threading.Lock()
 
 VACIA = {
     "version": 1,
-    "settings": {"theme": "system", "accent": "clay", "author": ""},
-    "ui": {"view": "hoy", "weekOffset": 0, "tab": "md",
+    "settings": {"theme": "system", "accent": "clay", "author": "",
+                 "workStart": "09:00", "workEnd": "18:00"},
+    "ui": {"view": "hoy", "weekOffset": 0, "dayOffset": 0, "tab": "md",
            "includes": {"side": True, "board": True, "reminders": True, "prompt": True}},
     "tasks": [],
     "reminders": [],

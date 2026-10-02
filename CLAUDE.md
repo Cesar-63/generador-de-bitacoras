@@ -32,6 +32,7 @@ python3 tools/bitacora.py cerrar <id>
 python3 tools/bitacora.py nota <id> "Bloqueado por X"
 python3 tools/bitacora.py recordar "Enviar avance" --cuando "2026-09-25 17:00" \
     --repite weekdays
+python3 tools/bitacora.py dia [--offset -1 | --fecha 2026-09-25]   # horario y huecos
 python3 tools/bitacora.py semana [--offset -1] [--salida bitacora.md]
 ```
 
@@ -44,8 +45,9 @@ esquema de abajo.
 ```jsonc
 {
   "version": 1,
-  "settings": { "theme": "system|light|dark", "accent": "clay|teal|indigo|ink", "author": "" },
-  "ui": { "view": "hoy", "weekOffset": 0, "tab": "md",
+  "settings": { "theme": "system|light|dark", "accent": "clay|teal|indigo|ink", "author": "",
+                "workStart": "09:00", "workEnd": "18:00" },   // jornada, hora local
+  "ui": { "view": "hoy", "weekOffset": 0, "dayOffset": 0, "tab": "md",
           "includes": { "side": true, "board": true, "reminders": true, "prompt": true } },
   "tasks": [{
     "id": "a1b2c3d4e5",            // único; cualquier cadena estable sirve
@@ -92,6 +94,18 @@ esquema de abajo.
 5. Si el JSON queda malformado, la app y el servidor fallan con un error claro,
    pero nadie recupera lo perdido: valida antes de escribir
    (`python3 -m json.tool data/bitacora.json > /dev/null`).
+
+## El horario
+
+La vista **Horario** (`#/horario`) y `bitacora.py dia` muestran un día como línea
+de tiempo: cada sesión de qué hora a qué hora y, de lunes a viernes, los huecos
+de la jornada (`settings.workStart`–`workEnd`) que no tienen tarea. Sirve para
+revisar que todas las horas estén identificadas. Desde la app se pueden correr,
+alargar, reasignar o crear sesiones, nunca más allá de la hora actual.
+
+Si te pide revisar sus horas, usa `dia` para ver los huecos y **pregúntale** a
+qué tarea corresponde cada uno; la regla 1 sigue valiendo: no rellenes huecos
+por tu cuenta. Las sesiones que "se pisan" cuentan doble en el resumen semanal.
 
 ## El resumen semanal
 

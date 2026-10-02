@@ -11,6 +11,7 @@ abierta, recoge los cambios en unos segundos.
     python3 tools/bitacora.py mover a1b2c3 review
     python3 tools/bitacora.py cerrar a1b2c3
     python3 tools/bitacora.py recordar "Enviar el avance" --cuando "2026-09-25 17:00"
+    python3 tools/bitacora.py dia --offset -1
     python3 tools/bitacora.py semana
 """
 
@@ -24,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from serve import COLUMNAS, REL, _hm, escribir, leer  # noqa: E402
 
 DIAS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+NOMBRES_DIA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
          "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 NOMBRE_COL = dict(COLUMNAS)
@@ -254,6 +256,79 @@ def cmd_recordar(data, args):
     print(f"Recordatorio para {rec['at']}: {rec['text']}")
 
 
+def cmd_dia(data, args):
+    """El horario de un día: cada sesión de qué hora a qué hora, y los huecos de la
+    jornada que no tienen tarea. Lo mismo que la vista Horario de la app."""
+    if args.fecha:
+        try:
+            d0 = datetime.fromisoformat(args.fecha).astimezone()
+        except ValueError:
+            sys.exit("--fecha va como 2026-09-25.")
+    else:
+        d0 = datetime.now().astimezone() + timedelta(days=args.offset)
+    d0 = d0.replace(hour=0, minute=0, second=0, microsecond=0)
+    d1 = d0 + timedelta(days=1)
+    ajustes = data.get("settings") or {}
+    jornada = (ajustes.get("workStart") or "09:00", ajustes.get("workEnd") or "18:00")
+    corriendo = data.get("timer") or {}
+    ahora = datetime.now().astimezone()
+
+    bloques = []
+    for t in data["tasks"]:
+        sesiones = list(t.get("sessions") or [])
+        if corriendo.get("taskId") == t["id"] and corriendo.get("startedAt"):
+            sesiones.append({"start": corriendo["startedAt"], "end": None})
+        for s in sesiones:
+            try:
+                a = _aware(s["start"]).astimezone()
+                b = _aware(s["end"]).astimezone() if s.get("end") else ahora
+            except (KeyError, ValueError, TypeError):
+                continue
+            if b <= a or b <= d0 or a >= d1:
+                continue
+            bloques.append((max(a, d0), min(b, d1), t, not s.get("end")))
+    bloques.sort(key=lambda x: (x[0], x[1]))
+
+    def en_hora(hhmm):
+        hh, mm = (int(x) for x in hhmm.split(":"))
+        return d0.replace(hour=hh, minute=mm)
+
+    huecos = []
+    if bloques or d0.weekday() < 5:
+        cur, tope = en_hora(jornada[0]), min(en_hora(jornada[1]), ahora.replace(second=0, microsecond=0))
+        for a, b, _, _ in bloques:
+            if a > cur and cur < tope and min(a, tope) - cur >= timedelta(minutes=5):
+                huecos.append((cur, min(a, tope)))
+            cur = max(cur, b)
+        if tope - cur >= timedelta(minutes=5):
+            huecos.append((cur, tope))
+
+    filas = [(a, 0, b, t, vivo) for a, b, t, vivo in bloques] + [(a, 1, b, None, False) for a, b in huecos]
+    filas.sort(key=lambda x: (x[0], x[1]))
+    print(f"\n{NOMBRES_DIA[d0.weekday()]} {d0:%Y-%m-%d} · jornada {jornada[0]}–{jornada[1]}\n")
+    if not filas:
+        print("  Sin sesiones este día.")
+    fin_previo = None
+    registrado = timedelta()
+    for a, es_hueco, b, t, vivo in filas:
+        dur = humano((b - a).total_seconds())
+        rango = f"{a:%H:%M}–{'ahora' if vivo else f'{b:%H:%M}'}"
+        if es_hueco:
+            print(f"  {rango:<13} {dur:>7}  ·· sin asignar ··")
+            continue
+        registrado += b - a
+        extra = []
+        if t.get("kind") == "side":
+            extra.append("secundaria")
+        if fin_previo and a < fin_previo:
+            extra.append("SE PISA con la anterior")
+        cola = ("  (" + ", ".join(extra) + ")") if extra else ""
+        print(f"  {rango:<13} {dur:>7}  {t.get('title', '')}  [{t['id']}]{cola}")
+        fin_previo = max(fin_previo, b) if fin_previo else b
+    libre = sum((b - a for a, b in huecos), timedelta())
+    print(f"\nRegistrado {humano(registrado.total_seconds())} · sin asignar {humano(libre.total_seconds())}\n")
+
+
 def cmd_semana(data, args):
     ini = lunes(args.offset)
     fin = ini + timedelta(days=7)
@@ -430,6 +505,11 @@ def main():
     p.add_argument("--repite", choices=REPETICIONES, default="once")
     p.add_argument("--tarea", help="id de la tarea vinculada")
     p.set_defaults(func=cmd_recordar)
+
+    p = sub.add_parser("dia", help="horario de un día: sesiones y huecos sin asignar")
+    p.add_argument("--fecha", help="2026-09-25 (por defecto, hoy)")
+    p.add_argument("--offset", type=int, default=0, help="-1 ayer")
+    p.set_defaults(func=cmd_dia)
 
     p = sub.add_parser("semana", help="generar el archivo semanal para Claude")
     p.add_argument("--offset", type=int, default=0, help="-1 la semana pasada")

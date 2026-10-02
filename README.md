@@ -26,6 +26,7 @@ python3 tools/bitacora.py ver                       # listar desde la terminal
 python3 tools/bitacora.py add "Título" --proyecto Atlas
 python3 tools/bitacora.py tiempo <id> 45            # sumar 45 minutos
 python3 tools/bitacora.py cerrar <id>
+python3 tools/bitacora.py dia --offset -1           # el horario de ayer, con huecos
 python3 tools/bitacora.py semana                    # el markdown para Claude
 ```
 
@@ -54,7 +55,11 @@ nada; es lo que lee Claude al abrir la carpeta.
 - **Recordatorios** con repetición (una vez, diario, días hábiles, semanal), vinculables a
   una tarea y capaces de arrancar el cronómetro al avisar. Usan las notificaciones del
   navegador si les das permiso; si no, avisan dentro de la app.
-- **Semana**: tiempo por día, totales, y el panel de exportación en Markdown o JSON.
+- **Horario**: el día como línea de tiempo, de qué hora a qué hora va cada tarea. Marca los
+  huecos de la jornada sin tarea y las sesiones que se pisan. Los bloques se arrastran para
+  correrlos, se estiran por el borde inferior y se reasignan con un clic; las tareas se sueltan
+  sobre un hueco para llenarlo. La jornada se ajusta en *Ajustes*.
+- **Semana**: tiempo por día (clic en un día abre su horario), totales, y el panel de exportación en Markdown o JSON.
 - **Modo oscuro** (auto, claro u oscuro) y cuatro colores de acento.
 - **Copia de seguridad**: descarga y restaura todo en un `.json`.
 

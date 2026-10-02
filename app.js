@@ -11,6 +11,7 @@
     { id: 'done', name: 'Hecho', dot: 'good' }
   ];
   var DAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
+  var DAY_NAMES = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
   var MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
     'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var REPEATS = [
@@ -106,8 +107,8 @@
   function blank() {
     return {
       version: 1,
-      settings: { theme: 'system', accent: 'clay', author: '' },
-      ui: { view: 'hoy', weekOffset: 0, tab: 'md', includes: { side: true, board: true, reminders: true, prompt: true } },
+      settings: { theme: 'system', accent: 'clay', author: '', workStart: '09:00', workEnd: '18:00' },
+      ui: { view: 'hoy', weekOffset: 0, dayOffset: 0, tab: 'md', includes: { side: true, board: true, reminders: true, prompt: true } },
       tasks: [],
       reminders: [],
       moves: [],
@@ -125,6 +126,10 @@
     data.tasks = data.tasks || [];
     data.reminders = data.reminders || [];
     data.moves = data.moves || [];
+    /* el horario edita sesiones por id: las escritas a mano pueden no traerlo */
+    data.tasks.forEach(function (t) {
+      (t.sessions || []).forEach(function (s) { if (!s.id) s.id = uid(); });
+    });
     if (typeof data.version !== 'number') data.version = 1;
     return data;
   }
@@ -204,7 +209,7 @@
   }
 
   function pollFile() {
-    if (MODE !== 'archivo' || saveTimer || saving || (dlg && dlg.open)) return;
+    if (MODE !== 'archivo' || saveTimer || saving || drag || (dlg && dlg.open)) return;
     fetch('api/state', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (body) {
@@ -480,6 +485,7 @@
     var view = S.ui.view;
     var html = '';
     if (view === 'kanban') html = viewKanban();
+    else if (view === 'horario') html = viewHorario();
     else if (view === 'semana') html = viewSemana();
     else if (view === 'recordatorios') html = viewRecordatorios();
     else if (view === 'ajustes') html = viewAjustes();
@@ -489,6 +495,7 @@
     paintBanner();
     refreshLive();
     if (view === 'kanban') wireDrag();
+    if (view === 'horario') wireSchedule();
   }
 
   function paintNav() {
@@ -754,6 +761,421 @@
     }
   }
 
+  /* ---- Horario ---- */
+
+  /* Cada sesión es un bloque sobre la línea del día; lo que queda sin cubrir dentro
+     de la jornada es un hueco. Arrastrar un bloque lo corre, su borde inferior
+     cambia el término y un clic abre la sesión para editarla o reasignarla. */
+  var PX_MIN = 1.2;
+  var SNAP = 5;
+  var MIN_GAP = 5 * 60000;
+  var drag = null;
+  var lastDrag = 0;
+
+  function minutesOf(text) {
+    var p = String(text || '').split(':');
+    var h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+    return isNaN(h) ? 0 : h * 60 + (isNaN(m) ? 0 : m);
+  }
+
+  function atMinutes(day, mins) {
+    var d = startOfDay(day);
+    d.setHours(Math.floor(mins / 60), mins % 60, 0, 0);
+    return d.getTime();
+  }
+
+  function dayRef() { return addDays(startOfDay(new Date()), S.ui.dayOffset || 0); }
+
+  function findSession(t, sid) {
+    var list = (t && t.sessions) || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === sid) return list[i];
+    return null;
+  }
+
+  function dayItems(day) {
+    var from = day.getTime(), to = endOfDay(day).getTime();
+    var out = [];
+    S.tasks.forEach(function (t) {
+      sessionsOf(t).forEach(function (s) {
+        var a = new Date(s.start).getTime(), b = s.end ? new Date(s.end).getTime() : Date.now();
+        if (isNaN(a) || isNaN(b) || b <= a || b <= from || a >= to) return;
+        out.push({ task: t, sess: s, a: Math.max(a, from), b: Math.min(b, to), live: !s.end });
+      });
+    });
+    out.sort(function (x, y) { return x.a - y.a || x.b - y.b; });
+
+    /* bloques que se pisan van lado a lado: un carril por bloque simultáneo */
+    var cluster = [], lanes = [], clusterEnd = -1;
+    function close() {
+      cluster.forEach(function (it) { it.lanes = lanes.length; });
+      cluster = []; lanes = [];
+    }
+    out.forEach(function (it) {
+      if (it.a >= clusterEnd) close();
+      var lane = -1;
+      for (var i = 0; i < lanes.length; i++) if (lanes[i] <= it.a) { lane = i; break; }
+      if (lane < 0) { lane = lanes.length; lanes.push(0); }
+      lanes[lane] = it.b;
+      it.lane = lane;
+      cluster.push(it);
+      clusterEnd = Math.max(clusterEnd, it.b);
+    });
+    close();
+    return out;
+  }
+
+  function dayGaps(day, items) {
+    var dow = day.getDay();
+    if ((dow === 0 || dow === 6) && !items.length) return [];
+    var w0 = atMinutes(day, minutesOf(S.settings.workStart));
+    var cap = Math.min(atMinutes(day, minutesOf(S.settings.workEnd)), Math.floor(Date.now() / 60000) * 60000);
+    var gaps = [], cur = w0, prev = null;
+    function push(a, b) { if (b - a >= MIN_GAP) gaps.push({ a: a, b: b, prev: prev }); }
+    items.forEach(function (it) {
+      if (it.a > cur && cur < cap) push(cur, Math.min(it.a, cap));
+      if (it.b > cur) { cur = it.b; prev = it.task; }
+    });
+    if (cur < cap) push(cur, cap);
+    return gaps;
+  }
+
+  function unionSeconds(items) {
+    var total = 0, cur = -1;
+    items.forEach(function (it) {
+      var a = Math.max(it.a, cur);
+      if (it.b > a) total += it.b - a;
+      cur = Math.max(cur, it.b);
+    });
+    return total / 1000;
+  }
+
+  function viewHorario() {
+    var day = dayRef();
+    var off = S.ui.dayOffset || 0;
+    var from = day.getTime(), to = endOfDay(day).getTime();
+    var items = dayItems(day);
+    var gaps = dayGaps(day, items);
+    var logged = items.reduce(function (a, it) { return a + (it.b - it.a) / 1000; }, 0);
+    var free = gaps.reduce(function (a, g) { return a + (g.b - g.a) / 1000; }, 0);
+    var twice = logged - unionSeconds(items);
+    var future = from > Date.now();
+
+    var h = topbar('Horario · semana ' + isoWeek(day).week + ' · ' + (off === 0 ? 'hoy' : off === -1 ? 'ayer' : DAYS[(day.getDay() + 6) % 7]),
+      DAY_NAMES[(day.getDay() + 6) % 7] + ' ' + longDate(day),
+      '<div class="seg" role="group" aria-label="Cambiar de día">' +
+      '<button type="button" class="seg-btn" data-act="day" data-delta="-1" aria-label="Día anterior">‹</button>' +
+      '<button type="button" class="seg-btn" data-act="day" data-delta="0" aria-pressed="' + (off === 0) + '">Hoy</button>' +
+      '<button type="button" class="seg-btn" data-act="day" data-delta="1" aria-label="Día siguiente"' + (off >= 0 ? ' disabled' : '') + '>›</button>' +
+      '</div>' +
+      '<button type="button" class="btn primary" data-act="sched-add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nueva sesión</button>');
+
+    h += '<div class="stats">' +
+      '<div class="stat"><span class="hint">Jornada</span><span class="mono xl">' + esc(S.settings.workStart) + '–' + esc(S.settings.workEnd) + '</span></div>' +
+      '<div class="stat"><span class="hint">Registrado</span><span class="mono xl">' + hm(logged) + '</span></div>' +
+      '<div class="stat"><span class="hint">Sin asignar</span><span class="mono xl"' + (free ? ' style="color:var(--warn)"' : '') + '>' + hm(free) + '</span></div>' +
+      (twice >= 60 ? '<div class="stat"><span class="hint">Contado dos veces</span><span class="mono xl" style="color:var(--danger)">' + hm(twice) + '</span></div>' : '') +
+      '</div>';
+
+    h += '<div class="cols"><div class="grow" style="display:flex;flex-direction:column;gap:20px">';
+
+    /* la línea del día: de la jornada, ampliada a lo que se haya trabajado fuera de ella */
+    var h0 = Math.floor(minutesOf(S.settings.workStart) / 60);
+    var h1 = Math.ceil(minutesOf(S.settings.workEnd) / 60);
+    items.forEach(function (it) {
+      h0 = Math.min(h0, new Date(it.a).getHours());
+      h1 = Math.max(h1, it.b >= to ? 24 : Math.ceil((new Date(it.b).getHours() * 60 + new Date(it.b).getMinutes()) / 60));
+    });
+    h0 = Math.max(0, h0); h1 = Math.min(24, Math.max(h1, h0 + 1));
+    var gridFrom = atMinutes(day, h0 * 60);
+    var y = function (ms) { return Math.round((ms - gridFrom) / 60000 * PX_MIN); };
+    var height = (h1 - h0) * 60 * PX_MIN;
+
+    h += '<section class="card"><div class="row wrap"><div class="grow"><h2>Línea del día</h2>' +
+      '<span class="hint">' + (future ? 'Día futuro: aquí sólo se revisan horas ya trabajadas.'
+        : 'Arrastra un bloque para correrlo, su borde inferior para alargarlo; clic para editar. Clic en un espacio vacío para añadir.') + '</span></div>' +
+      '<span class="row" style="gap:6px"><span class="dot accent"></span><span class="hint">Principales</span></span>' +
+      '<span class="row" style="gap:6px"><span class="dot good"></span><span class="hint">Secundarias</span></span>' +
+      '<span class="row" style="gap:6px"><span class="dot warn"></span><span class="hint">Sin asignar</span></span></div>';
+
+    h += '<div class="sched" style="height:' + height + 'px"><div class="sched-hours" aria-hidden="true">';
+    for (var hr = h0; hr <= h1; hr++) {
+      h += '<span class="sched-hour mono" style="top:' + ((hr - h0) * 60 * PX_MIN) + 'px">' + pad(hr) + ':00</span>';
+    }
+    h += '</div><div class="sched-area' + (future ? ' off' : '') + '" data-act="sched-new" data-from="' + gridFrom + '">';
+    var w0 = atMinutes(day, minutesOf(S.settings.workStart)), w1 = atMinutes(day, minutesOf(S.settings.workEnd));
+    if (w1 > w0) h += '<div class="sched-work" style="top:' + y(w0) + 'px;height:' + (y(w1) - y(w0)) + 'px"></div>';
+    for (var hl = h0; hl < h1; hl++) {
+      h += '<div class="sched-line" style="top:' + ((hl - h0) * 60 * PX_MIN) + 'px"></div>' +
+        '<div class="sched-line half" style="top:' + ((hl - h0) * 60 + 30) * PX_MIN + 'px"></div>';
+    }
+    gaps.forEach(function (g) {
+      var gh = y(g.b) - y(g.a);
+      h += '<button type="button" class="sched-gap" data-act="fill-gap" data-a="' + g.a + '" data-b="' + g.b + '"' +
+        (g.prev ? ' data-id="' + g.prev.id + '"' : '') + ' style="top:' + y(g.a) + 'px;height:' + gh + 'px">' +
+        (gh >= 16 ? '<span>Sin asignar · ' + hhmm(new Date(g.a)) + '–' + hhmm(new Date(g.b)) + ' · ' + human((g.b - g.a) / 1000) + '</span>' : '') +
+        '</button>';
+    });
+    items.forEach(function (it) {
+      var bh = Math.max(18, y(it.b) - y(it.a));
+      var over = it.lanes > 1;
+      var lane = 'left:calc(' + (100 * it.lane / it.lanes) + '% + 2px);width:calc(' + (100 / it.lanes) + '% - 4px)';
+      h += '<div class="sched-block ' + (it.task.kind === 'side' ? 'side' : 'main') + (it.live ? ' live' : '') +
+        (over ? ' overlap' : '') + (bh < 36 ? ' tight' : '') + '" role="button" tabindex="0"' +
+        ' data-act="' + (it.live ? 'edit' : 'edit-sess') + '" data-id="' + it.task.id + '"' + (it.sess.id ? ' data-sess="' + it.sess.id + '"' : '') +
+        (it.live ? ' data-live="sched-live" data-a="' + it.a + '"' : '') +
+        ' style="top:' + y(it.a) + 'px;height:' + bh + 'px;' + lane + '"' +
+        ' title="' + esc(it.task.title) + ' · ' + hhmm(new Date(it.a)) + '–' + (it.live ? 'ahora' : hhmm(new Date(it.b))) + '">' +
+        '<span class="sched-title">' + esc(it.task.title) + '</span>' +
+        '<span class="sched-time mono">' + hhmm(new Date(it.a)) + '–' + (it.live ? 'ahora' : hhmm(new Date(it.b))) +
+        ' · ' + human((it.b - it.a) / 1000) + (over ? ' · se pisa' : '') + '</span>' +
+        (it.live ? '' : '<span class="sched-grip" aria-hidden="true"></span>') +
+        '</div>';
+    });
+    if (Date.now() >= gridFrom && Date.now() < atMinutes(day, h1 * 60)) {
+      h += '<div class="sched-now" data-live="sched-now" data-from="' + gridFrom + '" style="top:' + y(Date.now()) + 'px"></div>';
+    }
+    h += '</div></div></section>';
+
+    h += '</div><div class="col-side">';
+
+    /* la misma información como lista: de qué hora a qué hora, en orden */
+    var rows = items.map(function (it) { return { a: it.a, item: it }; })
+      .concat(gaps.map(function (g) { return { a: g.a, gap: g }; }))
+      .sort(function (x, z) { return x.a - z.a || (x.gap ? 1 : -1); });
+    h += '<section class="card"><div class="row"><h2 class="grow">En orden</h2>' +
+      '<span class="hint">' + items.length + ' bloques · ' + gaps.length + ' huecos</span></div>';
+    if (!rows.length) h += '<p class="empty">' + (future ? 'Todavía no llega este día.' : 'Sin sesiones este día.') + '</p>';
+    else {
+      h += '<div class="list">';
+      rows.forEach(function (r) {
+        if (r.gap) {
+          var g = r.gap;
+          h += '<div class="line"><span class="chip warn mono">' + hhmm(new Date(g.a)) + '–' + hhmm(new Date(g.b)) + '</span>' +
+            '<span class="line-title sched-what"><span class="hint">Sin asignar</span>' +
+            '<span class="mono hint">' + human((g.b - g.a) / 1000) + '</span></span>' +
+            '<button type="button" class="btn sm" data-act="fill-gap" data-a="' + g.a + '" data-b="' + g.b + '"' +
+            (g.prev ? ' data-id="' + g.prev.id + '"' : '') + '>Asignar</button></div>';
+          return;
+        }
+        var it = r.item;
+        h += '<button type="button" class="line clickable sched-row" data-act="' + (it.live ? 'edit' : 'edit-sess') + '" data-id="' + it.task.id + '"' +
+          (it.sess.id ? ' data-sess="' + it.sess.id + '"' : '') + '>' +
+          '<span class="chip mono' + (it.live ? ' accent' : '') + '">' + hhmm(new Date(it.a)) + '–' + (it.live ? 'ahora' : hhmm(new Date(it.b))) + '</span>' +
+          '<span class="line-title sched-what"><span>' + esc(it.task.title) + '</span>' +
+          '<span class="mono hint">' + human((it.b - it.a) / 1000) + (it.lanes > 1 ? ' · se pisa' : '') + '</span></span></button>';
+      });
+      h += '</div>';
+    }
+    h += '</section>';
+
+    /* tareas para soltar sobre la línea */
+    var open = S.tasks.filter(function (t) { return !t.done && t.column !== 'done'; })
+      .sort(function (a, b) { return (a.kind === 'main' ? 0 : 1) - (b.kind === 'main' ? 0 : 1); });
+    h += '<section class="card"><div class="row"><h2 class="grow">Tareas</h2>' +
+      '<span class="hint">Arrástralas a la línea</span></div>';
+    if (!open.length) h += '<p class="hint">No hay tareas abiertas.</p>';
+    else {
+      h += '<div class="list">';
+      open.forEach(function (t) {
+        h += '<div class="line sched-task" draggable="true" data-id="' + t.id + '">' +
+          '<span class="dot ' + (t.kind === 'side' ? 'good' : 'accent') + '"></span>' +
+          '<span class="line-title">' + esc(t.title) + '</span>' +
+          (t.project ? '<span class="chip">' + esc(t.project) + '</span>' : '') +
+          '<button type="button" class="icon-btn" data-act="sched-add" data-id="' + t.id + '" aria-label="Añadir una sesión de ' + esc(t.title) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button></div>';
+      });
+      h += '</div>';
+    }
+    h += '</section>';
+
+    h += '</div></div>';
+    return h;
+  }
+
+  /* hueco que contiene ese instante, o null */
+  function gapAt(ms) {
+    var day = dayRef();
+    var gaps = dayGaps(day, dayItems(day));
+    for (var i = 0; i < gaps.length; i++) if (ms >= gaps[i].a && ms < gaps[i].b) return gaps[i];
+    return null;
+  }
+
+  function areaMs(area, clientY) {
+    var top = area.getBoundingClientRect().top;
+    var mins = Math.max(0, (clientY - top) / PX_MIN);
+    return parseFloat(area.getAttribute('data-from')) + Math.floor(mins / 15) * 15 * 60000;
+  }
+
+  /* primer hueco del día, o la última media hora */
+  function suggestedRange() {
+    var day = dayRef();
+    var items = dayItems(day);
+    var gaps = dayGaps(day, items);
+    if (gaps.length) return { a: gaps[0].a, b: gaps[0].b, prev: gaps[0].prev };
+    var end = Math.min(Date.now(), endOfDay(day).getTime() - 60000);
+    end = Math.floor(end / (SNAP * 60000)) * SNAP * 60000;
+    return { a: Math.max(day.getTime(), end - 30 * 60000), b: end };
+  }
+
+  function addSessionAt(taskId, ms) {
+    var t = taskById(taskId);
+    if (!t) return;
+    var g = gapAt(ms);
+    var a = g ? g.a : ms, b = g ? g.b : ms + 30 * 60000;
+    b = Math.min(b, Math.floor(Date.now() / 60000) * 60000, endOfDay(dayRef()).getTime());
+    if (b - a < 60000) { toast('El horario registra tiempo ya trabajado: suelta la tarea antes de ahora.'); return; }
+    t.sessions = t.sessions || [];
+    t.sessions.push({ id: uid(), start: new Date(a).toISOString(), end: new Date(b).toISOString(), manual: true });
+    save(); render();
+    toast(t.title + ': ' + hhmm(new Date(a)) + '–' + hhmm(new Date(b)) + (g ? ' (todo el hueco)' : ''));
+  }
+
+  function wireSchedule() {
+    var area = viewEl.querySelector('.sched-area');
+    if (!area || area.classList.contains('off')) return;
+
+    area.addEventListener('pointerdown', function (e) {
+      var block = e.target.closest('.sched-block');
+      if (!block || block.classList.contains('live') || e.button !== 0) return;
+      var grip = !!e.target.closest('.sched-grip');
+      if (!grip && e.pointerType === 'touch') return;  /* en táctil, el bloque se toca; se estira por el borde */
+      var t = taskById(block.getAttribute('data-id'));
+      var s = findSession(t, block.getAttribute('data-sess'));
+      if (!s) return;
+      drag = {
+        el: block, mode: grip ? 'resize' : 'move', y: e.clientY, moved: false, delta: 0,
+        top: parseFloat(block.style.top), height: parseFloat(block.style.height),
+        task: t, sess: s, a: new Date(s.start).getTime(), b: new Date(s.end).getTime(),
+        label: block.querySelector('.sched-time')
+      };
+      block.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    area.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dy = e.clientY - drag.y;
+      if (!drag.moved && Math.abs(dy) < 4) return;
+      drag.moved = true;
+      drag.el.classList.add('dragging');
+      var delta = Math.round(dy / PX_MIN / SNAP) * SNAP;
+      var mins = (drag.b - drag.a) / 60000;
+      if (drag.mode === 'resize') delta = Math.max(delta, SNAP - mins);
+      drag.delta = delta;
+      var a = drag.mode === 'move' ? drag.a + delta * 60000 : drag.a;
+      var b = drag.b + delta * 60000;
+      if (drag.mode === 'move') drag.el.style.top = (drag.top + delta * PX_MIN) + 'px';
+      else drag.el.style.height = Math.max(18, drag.height + delta * PX_MIN) + 'px';
+      if (drag.label) drag.label.textContent = hhmm(new Date(a)) + '–' + hhmm(new Date(b)) + ' · ' + human((b - a) / 1000);
+    });
+
+    function finish(apply) {
+      if (!drag) return;
+      var d = drag;
+      drag = null;
+      if (!d.moved) return;
+      lastDrag = Date.now();
+      if (apply && d.delta) {
+        var a = d.mode === 'move' ? d.a + d.delta * 60000 : d.a;
+        var b = d.b + d.delta * 60000;
+        if (b > Date.now() + 60000) toast('No se puede pasar de ahora: el horario registra tiempo ya trabajado.');
+        else {
+          d.sess.start = new Date(a).toISOString();
+          d.sess.end = new Date(b).toISOString();
+          save();
+          toast(d.task.title + ': ' + hhmm(new Date(a)) + '–' + hhmm(new Date(b)));
+        }
+      }
+      render();
+    }
+    area.addEventListener('pointerup', function () { finish(true); });
+    area.addEventListener('pointercancel', function () { finish(false); });
+
+    area.addEventListener('keydown', function (e) {
+      var block = e.target.closest('.sched-block');
+      if (block && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); block.click(); }
+    });
+
+    /* tareas arrastradas desde la lista */
+    var rows = viewEl.querySelectorAll('.sched-task');
+    for (var i = 0; i < rows.length; i++) {
+      rows[i].addEventListener('dragstart', function (e) {
+        e.dataTransfer.setData('text/plain', this.getAttribute('data-id'));
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+    }
+    area.addEventListener('dragover', function (e) { e.preventDefault(); area.classList.add('over'); });
+    area.addEventListener('dragleave', function (e) { if (e.target === area) area.classList.remove('over'); });
+    area.addEventListener('drop', function (e) {
+      e.preventDefault();
+      area.classList.remove('over');
+      var id = e.dataTransfer.getData('text/plain');
+      if (id) addSessionAt(id, areaMs(area, e.clientY));
+    });
+  }
+
+  function sessionDialog(taskId, sid, preset) {
+    var t = taskId ? taskById(taskId) : null;
+    var s = t && sid ? findSession(t, sid) : null;
+    var day = dayRef();
+    var a, b;
+    if (s) { a = new Date(s.start); b = new Date(s.end); }
+    else if (preset) { a = new Date(preset.a); b = new Date(preset.b); }
+    else { var r = suggestedRange(); a = new Date(r.a); b = new Date(r.b); }
+    var dayIds = {};
+    dayItems(day).forEach(function (it) { dayIds[it.task.id] = 1; });
+    var choices = S.tasks.filter(function (x) { return (!x.done && x.column !== 'done') || dayIds[x.id] || (t && x.id === t.id); });
+    if (!choices.length) { toast('Primero crea una tarea.'); return; }
+
+    var body =
+      '<div class="field"><label for="s-task">Tarea</label><select id="s-task">' +
+      (t ? '' : '<option value="">Elige una tarea…</option>') +
+      choices.map(function (x) {
+        return '<option value="' + x.id + '"' + (t && x.id === t.id ? ' selected' : '') + '>' +
+          esc(x.title) + (x.kind === 'side' ? ' · secundaria' : '') + (x.done ? ' · cerrada' : '') + '</option>';
+      }).join('') + '</select></div>' +
+      '<div class="row wrap" style="gap:12px">' +
+      '<div class="field grow"><label for="s-date">Día</label><input id="s-date" type="date" value="' + ymd(a) + '"></div>' +
+      '<div class="field grow"><label for="s-from">Desde</label><input id="s-from" type="time" value="' + hhmm(a) + '"></div>' +
+      '<div class="field grow"><label for="s-to">Hasta</label><input id="s-to" type="time" value="' + hhmm(b) + '"></div></div>' +
+      '<p class="hint">' + (s
+        ? 'Cambiar la tarea mueve estas horas a la otra tarea; el total de ambas se recalcula.'
+        : 'Si «hasta» queda antes que «desde», la sesión termina al día siguiente.') + '</p>';
+
+    var foot = (s ? '<button type="button" class="btn danger" data-act="del-sess" data-id="' + t.id + '" data-sess="' + s.id + '">Eliminar</button>' : '') +
+      '<span class="grow"></span>' +
+      '<button type="button" class="btn" data-act="dlg-close">Cancelar</button>' +
+      '<button type="button" class="btn primary" data-act="save-sess" data-id="' + (s ? t.id : '') + '" data-sess="' + (s ? s.id : '') + '">Guardar</button>';
+
+    openDialog(s ? 'Sesión' : 'Nueva sesión', body, foot);
+  }
+
+  function saveSession(oldTaskId, sid) {
+    var t = taskById(document.getElementById('s-task').value);
+    if (!t) { toast('Elige a qué tarea van estas horas.'); return; }
+    var date = document.getElementById('s-date').value;
+    var f = document.getElementById('s-from').value, to = document.getElementById('s-to').value;
+    if (!date || !f || !to) { toast('Completa el día, desde y hasta.'); return; }
+    var a = new Date(date + 'T' + f), b = new Date(date + 'T' + to);
+    if (isNaN(a) || isNaN(b)) { toast('Esa fecha no es válida.'); return; }
+    if (b <= a) b = addDays(b, 1);
+    if (b - a > 16 * 3600000) { toast('Una sesión no puede pasar de 16 horas.'); return; }
+    if (b.getTime() > Date.now() + 60000) { toast('Esa sesión termina después de ahora: el horario registra tiempo ya trabajado.'); return; }
+
+    var old = oldTaskId ? taskById(oldTaskId) : null;
+    var prev = old ? findSession(old, sid) : null;
+    var sess = { id: prev ? prev.id : uid(), start: a.toISOString(), end: b.toISOString() };
+    if (!prev || prev.manual) sess.manual = true;
+    if (prev) old.sessions = old.sessions.filter(function (x) { return x.id !== sid; });
+    t.sessions = t.sessions || [];
+    t.sessions.push(sess);
+    t.sessions.sort(function (x, y) { return x.start < y.start ? -1 : x.start > y.start ? 1 : 0; });
+    save();
+    dlg.close();
+    render();
+    toast(t.title + ': ' + hhmm(a) + '–' + hhmm(b));
+  }
+
   /* ---- Semana ---- */
 
   function weekData(monday) {
@@ -807,9 +1229,13 @@
         '</div></div>';
     });
     h += '</div><div class="day-labels">';
+    var today0 = startOfDay(new Date()).getTime();
     w.days.forEach(function (d, i) {
       var off = d.main + d.side === 0;
-      h += '<span class="' + (off ? 'off' : '') + '">' + DAYS[i] + ' ' + d.date.getDate() + '</span>';
+      var delta = Math.round((startOfDay(d.date).getTime() - today0) / 86400000);
+      var label = DAYS[i] + ' ' + d.date.getDate();
+      h += delta > 0 ? '<span class="off">' + label + '</span>'
+        : '<button type="button" class="day-link' + (off ? ' off' : '') + '" data-act="goto-day" data-offset="' + delta + '" title="Ver el horario del ' + label + '">' + label + '</button>';
     });
     h += '</div>';
 
@@ -912,7 +1338,13 @@
 
     h += '<section class="card"><h2>Bitácora</h2>' +
       '<div class="field"><label for="author">Tu nombre (va en el archivo exportado)</label>' +
-      '<input id="author" type="text" data-act="author" value="' + esc(S.settings.author) + '" placeholder="Opcional"></div></section>';
+      '<input id="author" type="text" data-act="author" value="' + esc(S.settings.author) + '" placeholder="Opcional"></div>' +
+      '<div class="row wrap" style="gap:12px">' +
+      '<div class="field grow"><label for="work-start">Jornada: desde</label>' +
+      '<input id="work-start" type="time" data-act="work" data-id="workStart" value="' + esc(S.settings.workStart) + '"></div>' +
+      '<div class="field grow"><label for="work-end">Hasta</label>' +
+      '<input id="work-end" type="time" data-act="work" data-id="workEnd" value="' + esc(S.settings.workEnd) + '"></div></div>' +
+      '<p class="hint">El horario marca como «sin asignar» lo que quede sin cubrir dentro de la jornada, de lunes a viernes.</p></section>';
 
     h += '<section class="card"><h2>Tus datos</h2>' +
       (MODE === 'archivo'
@@ -1350,6 +1782,46 @@
       save(); taskDialog(id); render(); toast('Sumados ' + mins + ' minutos');
       return;
     }
+    if (act === 'day') {
+      var dd = parseInt(el.getAttribute('data-delta'), 10);
+      S.ui.dayOffset = dd === 0 ? 0 : Math.min(0, (S.ui.dayOffset || 0) + dd);
+      save(); render();
+      return;
+    }
+    if (act === 'goto-day') {
+      S.ui.dayOffset = Math.min(0, parseInt(el.getAttribute('data-offset'), 10) || 0);
+      location.hash = '#/horario';
+      return;
+    }
+    if (act === 'sched-new' || act === 'edit-sess' || act === 'fill-gap') {
+      if (Date.now() - lastDrag < 400) return;  /* el clic que cierra un arrastre no abre nada */
+    }
+    if (act === 'sched-new') {
+      if (el.classList.contains('off')) return;
+      var at = areaMs(el, e.clientY);
+      if (at >= Date.now()) { toast('Ese momento aún no pasa: el horario registra tiempo ya trabajado.'); return; }
+      sessionDialog(null, null, { a: at, b: Math.min(at + 30 * 60000, Math.floor(Date.now() / 60000) * 60000) });
+      return;
+    }
+    if (act === 'sched-add') { sessionDialog(id, null, null); return; }
+    if (act === 'fill-gap') {
+      var before = taskById(id);  /* propone la tarea anterior al hueco sólo si sigue abierta */
+      sessionDialog(before && !before.done ? id : null, null, { a: parseFloat(el.getAttribute('data-a')), b: parseFloat(el.getAttribute('data-b')) });
+      return;
+    }
+    if (act === 'edit-sess') {
+      var sid = el.getAttribute('data-sess');
+      if (sid && findSession(taskById(id), sid)) sessionDialog(id, sid, null);
+      else taskDialog(id);
+      return;
+    }
+    if (act === 'save-sess') { saveSession(id, el.getAttribute('data-sess')); return; }
+    if (act === 'del-sess') {
+      var t5 = taskById(id);
+      if (t5) t5.sessions = (t5.sessions || []).filter(function (x) { return x.id !== el.getAttribute('data-sess'); });
+      save(); dlg.close(); render(); toast('Sesión eliminada');
+      return;
+    }
     if (act === 'new-reminder') { reminderDialog(null); return; }
     if (act === 'edit-reminder') { reminderDialog(id); return; }
     if (act === 'save-reminder') { saveReminder(id, el.getAttribute('data-new') === 'true'); return; }
@@ -1406,6 +1878,18 @@
     if (act === 'toggle-done') { toggleDone(taskById(id)); return; }
     if (act === 'include') { S.ui.includes[id] = el.checked; save(); render(); return; }
     if (act === 'author') { S.settings.author = el.value; save(); return; }
+    if (act === 'work') {
+      var next = Object.assign({}, S.settings);
+      next[id] = el.value;
+      if (!el.value || minutesOf(next.workEnd) <= minutesOf(next.workStart)) {
+        toast('La jornada tiene que terminar después de empezar.');
+        el.value = S.settings[id];
+        return;
+      }
+      S.settings[id] = el.value;
+      save(); render();
+      return;
+    }
     if (act === 'sub-toggle') {
       var t = taskById(id), sid = el.getAttribute('data-sub');
       t.subtasks.forEach(function (s) { if (s.id === sid) s.done = el.checked; });
@@ -1461,9 +1945,7 @@
         try {
           var data = JSON.parse(fr.result);
           if (!data || !data.tasks) throw new Error('formato');
-          S = data;
-          S.ui = Object.assign(blank().ui, S.ui || {});
-          S.settings = Object.assign(blank().settings, S.settings || {});
+          S = normalize(data);
           save(); applyLook(); render();
           toast('Copia restaurada');
         } catch (err) {
@@ -1494,7 +1976,7 @@
 
   function route() {
     var h = (location.hash || '').replace('#/', '');
-    var known = ['hoy', 'kanban', 'semana', 'recordatorios', 'ajustes'];
+    var known = ['hoy', 'kanban', 'horario', 'semana', 'recordatorios', 'ajustes'];
     S.ui.view = known.indexOf(h) >= 0 ? h : 'hoy';
     save();
     render();
@@ -1511,6 +1993,12 @@
         var t = taskById(k.slice(5));
         if (!t) continue;
         nodes[i].textContent = S.ui.view === 'kanban' ? hm(taskSeconds(t)) : hm(taskSeconds(t, r[0], r[1]));
+      }
+      else if (k === 'sched-live') {
+        nodes[i].style.height = Math.max(18, (Date.now() - parseFloat(nodes[i].getAttribute('data-a'))) / 60000 * PX_MIN) + 'px';
+      }
+      else if (k === 'sched-now') {
+        nodes[i].style.top = Math.round((Date.now() - parseFloat(nodes[i].getAttribute('data-from'))) / 60000 * PX_MIN) + 'px';
       }
     }
   }
